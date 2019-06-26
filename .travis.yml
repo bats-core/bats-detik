@@ -7,5 +7,5 @@ before_script:
   - sudo ./install.sh /usr/local
 
 script:
-  - cd tests && bats .
+  - ls -l && cd tests && bats .
 
