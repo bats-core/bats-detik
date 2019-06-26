@@ -14,7 +14,7 @@ The major assumption done here is that you have a test cluster, or at least a no
 * Execute Helm / kubectl / oc commands and verify assertions on their output.
   * Example: get the right number of POD, make sure they are READY, etc.
 * Execute application scenarios: 
-  * Example: access a login page and follow a complex UI scenario.
+  * Example: access a login page and follow a complex UI scenario (e.g. with Selenium).
   * Example: simulate events (e.g. the loss of a POD instance) and verify everything keeps on working.
   * Example: be able to play performance tests for a given configuration.
 * Organize all the tests in scenarios.
