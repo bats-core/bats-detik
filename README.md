@@ -6,7 +6,7 @@ This repository provides utilities to **execute end-to-end tests** of applicatio
 
 The major assumption done here is that you have a test cluster, or at least a non-production one, to execute these tests.
 
-> This tooling is inspired from [Pierre Mavro's article](https://blog.deimos.fr/2019/02/08/k8s-euft-run-functional-tests-on-your-helm-charts/), in particular for the BATS approach.
+> This tooling is inspired from [Pierre Mavro's article](https://blog.deimos.fr/2019/02/08/k8s-euft-run-functional-tests-on-your-helm-charts/), in particular for the BATS approach. However, it has the ambition of making such tests more simple to write. And it does not deal with the deployment of a  K8s cluster.
 
 
 ## Objectives
