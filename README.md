@@ -173,7 +173,7 @@ To ease the writing of assertions, some aliases are proposed by the library.
 
 Other aliases may appear later.
 
-**Attempts to verify the property of a set of resources of this type with this name pattern.**
+**Attempt to verify the property of a set of resources of this type with this name pattern.**
 
 ```bash
 try "at most <number> times every <number>s to get <resource-type> named '<regular-expression>' and verify that '<property-name>' is '<expected-value>'"
