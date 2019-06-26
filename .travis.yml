@@ -1,10 +1,10 @@
 language: minimal
 sudo: false
 
-before_script:
-  - cd /tmp && git clone https://github.com/sstephenson/bats.git
-  - cd /tmp/bats && sudo ./install.sh /usr/local
-  - cd ~
+install:
+  - git clone https://github.com/sstephenson/bats.git
+  - cd bats && sudo ./install.sh /usr/local
+  - cd ..
 
 script:
   - cd tests && bats .
