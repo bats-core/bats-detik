@@ -31,7 +31,72 @@ Make sure they import the **lib.sh** file.
 The library provides functions that allow to write assertions with a natural language, or almost. This reduces the amount of advanced bash commands to master.
 
 
-## Examples (kubectl / oc commands)
+## Examples (embedded in a BATS test)
+
+This section shows how to write unit tests using this library and BATS.
+
+```bash
+source ../lib/lib.sh
+CLIENT_NAME="kubectl"
+
+@test "verify the deployment" {
+	
+	run kubectl apply -f my-big-deployment-file.yml
+	[ "$status" -eq 0 ]
+	
+	sleep 20
+	
+	verify "there are 2 pods named 'nginx'"
+	[ "$status" -eq 0 ]
+	
+	verify "there is 1 service named 'nginx'"
+	[ "$status" -eq 0 ]
+	
+	try "at most 5 times every 30s to get pods named 'nginx' and verify that 'status' is 'running'"
+	[ "$status" -eq 0 ]
+}
+
+
+@test "verify the undeployment" {
+	
+	run kubectl delete -f my-big-deployment-file.yml
+	[ "$status" -eq 0 ]
+	
+	sleep 20
+	
+	verify "there are 0 pods named 'nginx'"
+	[ "$status" -eq 0 ]
+	
+	verify "there is 0 service named 'nginx'"
+	[ "$status" -eq 0 ]
+}
+```
+
+Running the command **bats my-tests.bats** would result in the following output...
+
+```
+bats my-tests.bats
+1..2
+✓ 1 verify the deployment
+✓ 2 verify the undeployment
+The command "bats my-tests.bats" exited with 0.
+```
+
+In case of error, it would show...
+
+```
+bats my-tests.bats
+1..2
+✗ 1 verify the deployment
+    (in test file my-tests.bats, line 14)
+     `[ "$status" -eq 0 ]' failed
+ 
+✓ 2 verify the undeployment
+The command "bats my-tests.bats" exited with 1.
+```
+
+
+## Library Examples (kubectl / oc commands)
 
 If you are working with a native Kubernetes cluster.
 
@@ -68,7 +133,7 @@ verify "there are 2 pods named 'nginx'"
 ```
 
 
-## Examples (helm commands)
+## Library Examples (helm commands)
 
 Soon...
 
