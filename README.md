@@ -14,7 +14,7 @@ The major assumption done here is that you have a test cluster, or at least a no
 * Execute Helm / kubectl / oc commands and verify assertions on their output.
   * Example: get the right number of POD, make sure they are READY, etc.
 * Execute application scenarios: 
-  * Example: access a login page and follow a complex UI scenario (e.g. with Selenium).
+  * Example: access a login page and follow a complex UI scenario (e.g. with [Selenium](https://www.seleniumhq.org/)).
   * Example: simulate events (e.g. the loss of a POD instance) and verify everything keeps on working.
   * Example: be able to play performance tests for a given configuration.
 * Organize all the tests in scenarios.
@@ -162,7 +162,8 @@ verify "'<property-name>' is '<expected-value>' for <resource-type> named '<regu
 ```
 
 *property-name* if one of the column names supported by K8s.  
-See https://kubernetes.io/docs/reference/kubectl/overview/#custom-columns
+See https://kubernetes.io/docs/reference/kubectl/overview/#custom-columns  
+You can also find column names by using `kubectl get <resource-type> -o custom-columns=ALL:*`.
 
 To ease the writing of assertions, some aliases are proposed by the library.
 
@@ -212,8 +213,21 @@ chmod +x lib.sh
 
 ## Usage in CI servers
 
-A Docker image will soon be made available with everything necessary to execute such tests.
+A Dockerfile is available with everything necessary to execute such tests.
 That includes kubectl, helm, BATS and this script.
+
+```bash
+# Build the image
+# (you can change the kubectl and Helm versions in the script)
+./docker-build.sh
+
+# Execute the tests available in this project
+docker run -v $(pwd)/tests:/home/testing/tests vincent-zurczak/devops-e2e-tests-in-kubernetes bats tests
+
+# The image will load and execute the tests.
+# In case of success, the exit code of the container will be 0.
+# In case of error, the exit code of the container will be 1.
+```
 
 
 ## Roadmap

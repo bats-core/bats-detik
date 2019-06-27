@@ -7,5 +7,6 @@ install:
   - cd ..
 
 script:
-  - cd tests && bats .
+  - bats tests
+  - ./docker-build.sh
 

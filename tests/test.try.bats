@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-source ../lib/lib.sh
+source "lib/lib.sh"
 
 
 CLIENT_NAME="mytest"
