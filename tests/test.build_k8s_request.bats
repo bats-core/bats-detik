@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-source "lib/lib.sh"
+load "../lib/lib"
 
 
 @test "verifying the generated request with the predefined 'status' parameter" {
