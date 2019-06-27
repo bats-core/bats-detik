@@ -36,7 +36,7 @@ The library provides functions that allow to write assertions with a natural lan
 This section shows how to write unit tests using this library and BATS.
 
 ```bash
-source ../lib/lib.sh
+load ../lib/lib
 CLIENT_NAME="kubectl"
 
 @test "verify the deployment" {
@@ -101,7 +101,7 @@ The command "bats my-tests.bats" exited with 1.
 If you are working with a native Kubernetes cluster.
 
 ```bash
-source ../lib/lib.sh
+load ../lib/lib
 
 # The client function.
 CLIENT_NAME="kubectl"
@@ -123,7 +123,7 @@ try "at most 5 times every 30s to get svc named 'nginx' and verify that '.spec.p
 If you work with OpenShift and would prefer to use **oc** instead of **kubectl**...
 
 ```bash
-source ../lib/lib.sh
+load ../lib/lib
 
 # The client function.
 CLIENT_NAME="oc"
@@ -167,10 +167,11 @@ You can also find column names by using `kubectl get <resource-type> -o custom-c
 
 To ease the writing of assertions, some aliases are proposed by the library.
 
-| Alias  | Target Property           | Useful For |
-| ------ | ------------------------- | :--------: |
-| status | .status.phase             | PODS       |
-| port   | .spec.ports[*].targetPort | Services   |
+| Alias        | Target Property           | Useful For |
+| ------------ | ------------------------- | :--------: |
+| status       | .status.phase             | PODS       |
+| port         | .spec.ports[*].port       | Services   |
+| targetPort   | .spec.ports[*].targetPort | Services   |
 
 Other aliases may appear later.
 

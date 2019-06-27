@@ -13,8 +13,9 @@ try() {
 	# The syntax to use
 	regex="at most ([0-9]+) times every ([0-9]+)s to get ([a-z]+) named '([^']+)' and verify that '([^']+)' is '([^']+)'"
 
-	# Convert the parameters to lower case
-	exp=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+	# Make the regular expression case-insensitive
+	exp="$1"
+	shopt -s nocasematch;
 
 	# Verify the expression and use it to build a request
 	if [[ "$exp" == "" ]]; then
@@ -26,10 +27,10 @@ try() {
 		# Extract parameters
 		times="${BASH_REMATCH[1]}"
 		delay="${BASH_REMATCH[2]}"
-		resource="${BASH_REMATCH[3]}"
+		resource=$(to_lower_case "${BASH_REMATCH[3]}")
 		name="${BASH_REMATCH[4]}"
 		property="${BASH_REMATCH[5]}"
-		expected_value="${BASH_REMATCH[6]}"
+		expected_value=$(to_lower_case "${BASH_REMATCH[6]}")
 		
 		# Prevent line breaks from being removed in command results
 		IFS=""
@@ -77,8 +78,9 @@ verify() {
 	regex_count_are="there are ([0-9]+) ([a-z]+) named '([^']+)'"
 	regex_verify="'([^']+)' is '([^']+)' for ([a-z]+) named '([^']+)'"
 	
-	# Convert the parameters to lower case
-	exp=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+	# Make the regular expression case-insensitive
+	exp="$1"
+	shopt -s nocasematch;
 
 	# Verify the expression and use it to build a request
 	if [[ "$exp" == "" ]]; then
@@ -87,7 +89,7 @@ verify() {
 	
 	elif [[ "$exp" =~ $regex_count_is ]] || [[ "$exp" =~ $regex_count_are ]]; then
 		card="${BASH_REMATCH[1]}"
-		resource="${BASH_REMATCH[2]}"
+		resource=$(to_lower_case "${BASH_REMATCH[2]}")
 		name="${BASH_REMATCH[3]}"
 
 		echo "Valid expression. Verification in progress..."
@@ -103,7 +105,7 @@ verify() {
 	elif [[ "$exp" =~ $regex_verify ]]; then
 		property="${BASH_REMATCH[1]}"
 		expected_value="${BASH_REMATCH[2]}"
-		resource="${BASH_REMATCH[3]}"
+		resource=$(to_lower_case "${BASH_REMATCH[3]}")
 		name="${BASH_REMATCH[4]}"
 		
 		echo "Valid expression. Verification in progress..."
@@ -127,7 +129,7 @@ verify_value() {
 
 	# Make the parameters readable
 	property="$1"
-	expected_value="$2"
+	expected_value=$(to_lower_case "$2")
 	resource="$3"
 	name="$4"
 
@@ -147,7 +149,7 @@ verify_value() {
 				
 		# Keep the second column (property to verify)
 		# and put it in lower case
-		value=$(echo "$line" | awk '{ print $2 }' | tr '[:upper:]' '[:lower:]')
+		value=$(to_lower_case "$line" | awk '{ print $2 }')
 		element=$(echo "$line" | awk '{ print $1 }')
 		if [[ "$value" != "$expected_value" ]]; then
 			echo "Current value for $element is $value..."
@@ -170,11 +172,21 @@ build_k8s_request() {
 	if [[ "$1" == "status" ]]; then
 		req="$req,PROP:.status.phase"
 	elif [[ "$1" == "port" ]]; then
+		req="$req,PROP:.spec.ports[*].port"
+	elif [[ "$1" == "targetPort" ]]; then
 		req="$req,PROP:.spec.ports[*].targetPort"
 	elif [[ "$1" != "" ]]; then
 		req="$req,PROP:$1"
 	fi
 	
 	echo $req
+}
+
+
+# Prints a string in lower case.
+# @param {string} The string.
+# @return 0
+function to_lower_case() {
+	echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 

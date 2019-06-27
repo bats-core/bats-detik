@@ -15,6 +15,14 @@ load "../lib/lib"
 	run build_k8s_request "port"
 	[ "$status" -eq 0 ]
 	[ ${#lines[@]} -eq 1 ]
+	[ "${lines[0]}" = "-o custom-columns=NAME:.metadata.name,PROP:.spec.ports[*].port" ]
+}
+
+
+@test "verifying the generated request with the predefined 'targetPort' parameter" {
+	run build_k8s_request "targetPort"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 1 ]
 	[ "${lines[0]}" = "-o custom-columns=NAME:.metadata.name,PROP:.spec.ports[*].targetPort" ]
 }
 
