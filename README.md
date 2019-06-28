@@ -46,13 +46,13 @@ CLIENT_NAME="kubectl"
 	
 	sleep 20
 	
-	verify "there are 2 pods named 'nginx'"
+	run verify "there are 2 pods named 'nginx'"
 	[ "$status" -eq 0 ]
 	
-	verify "there is 1 service named 'nginx'"
+	run verify "there is 1 service named 'nginx'"
 	[ "$status" -eq 0 ]
 	
-	try "at most 5 times every 30s to get pods named 'nginx' and verify that 'status' is 'running'"
+	run try "at most 5 times every 30s to get pods named 'nginx' and verify that 'status' is 'running'"
 	[ "$status" -eq 0 ]
 }
 
@@ -64,10 +64,10 @@ CLIENT_NAME="kubectl"
 	
 	sleep 20
 	
-	verify "there are 0 pods named 'nginx'"
+	run verify "there are 0 pods named 'nginx'"
 	[ "$status" -eq 0 ]
 	
-	verify "there is 0 service named 'nginx'"
+	run verify "there is 0 service named 'nginx'"
 	[ "$status" -eq 0 ]
 }
 ```
