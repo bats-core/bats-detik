@@ -1,0 +1,43 @@
+def label = "${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
+podTemplate(label: label, containers: [
+	containerTemplate(
+			name: 'jnlp',
+			image: 'jnlp-slave-alpine:3.27-1-alpine'), 
+	containerTemplate(
+			name: 'detik',
+			image: 'detik:LATEST',
+			ttyEnabled: true,
+			alwaysPullImage: true, 
+			envVars: [
+				envVar(key: 'http_proxy', value: 'http://proxy.local:3128'),
+				envVar(key: 'https_proxy', value: 'http://proxy.local:3128'),
+				envVar(key: 'TILLER_NAMESPACE', value: 'my-test-namespace')
+			])
+]) {
+
+	node(label) {
+		container(name: 'jnlp') {
+			stage('Checkout') {
+				checkout scm
+			}
+		}
+
+		container(name: 'ci-docker') {
+			stage('Login') {
+				withCredentials([usernamePassword(
+						credentialsId: 'k8s-credentials',
+						passwordVariable: 'K8S_PASSWORD',
+						usernameVariable: 'K8S_USERNAME')]) {
+
+					echo 'log into the cluster...'
+					// TODO: it depends on your cluster configuration
+				}
+			}
+
+			stage('Build and Test') {
+				sh 'bats tests/main.bats'
+			}
+		}
+	}
+}
+

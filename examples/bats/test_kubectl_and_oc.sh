@@ -1,5 +1,9 @@
 #!/bin/bash
 
+###########################################
+# A set of examples using DETIK functions.
+###########################################
+
 source ../lib/lib.sh
 
 # The client function.

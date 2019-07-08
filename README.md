@@ -1,12 +1,31 @@
-# DevOps e2e tests in Kubernetes
+# DETIK: DevOps e2e Tests in Kubernetes
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)]()
 [![Build Status](https://travis-ci.org/vincent-zurczak/devops-e2e-tests-in-kubernetes.svg?branch=master)](https://travis-ci.org/vincent-zurczak/devops-e2e-tests-in-kubernetes)
 
-This repository provides utilities to **execute end-to-end tests** of applications in Kubernetes clusters. This includes performing actions on the cluster (with kubectl, oc - for OpenShift - or helm) and verifying assertions. This is the ultimate set of tests to run for a project, long after unit and integration tests. In fact, the last part of a pipeline for a project or a Helm package.
+This repository provides utilities to **execute end-to-end tests** of applications in Kubernetes clusters. This includes performing actions on the cluster (with kubectl, oc - for OpenShift - or helm) and verifying assertions by using a natural language, or almost. This reduces the amount of advanced bash commands to master.
 
-The major assumption done here is that you have a test cluster, or at least a non-production one, to execute these tests.
+This kind of test is the ultimate set of verifications to run for a project, long after unit and integration tests. In fact, it is the last part of a pipeline for a project or a Helm package. The major assumption done here is that you have a test cluster, or at least a non-production one, to execute these tests.
 
-> This tooling is inspired from [Pierre Mavro's article](https://blog.deimos.fr/2019/02/08/k8s-euft-run-functional-tests-on-your-helm-charts/), in particular for the BATS approach. However, it has the ambition of making such tests more simple to write. And it does not deal with the deployment of a  K8s cluster.
+> This tooling is inspired from [Pierre Mavro's article](https://blog.deimos.fr/2019/02/08/k8s-euft-run-functional-tests-on-your-helm-charts/), in particular for the BATS approach. However, it has the ambition of making such tests more simple to write. And it does not deal with the deployment of a K8s cluster.
+
+
+## Table of Contents
+
+* [Objectives](#objectives)
+* [Examples](#examples)
+  * [Test files and result](#test-files-and-result)
+  * [Working with Kubectl or OC commands](#working-with-kubectl-or-oc-commands)
+  * [Other Examples](#other-examples)
+
+* [Usage](#usage)
+  * [Setup](#setup)
+  * [Executing tests by hand](#executing-tests-by-hand)
+  * [Continuous Integration](#continuous-integration)
+
+* [Syntax Reference](#syntax-reference)
+* [Errors](#errors)
+  * [Error Codes](#error-codes)
+  * [Linting](#linting)
 
 
 ## Objectives
@@ -21,22 +40,14 @@ The major assumption done here is that you have a test cluster, or at least a no
 * Obtain an execution report at the end.
 
 
-## Usage
+## Examples
 
-* Install [BATS](https://github.com/sstephenson/bats), a testing framework for scripts.
-* Download the **lib/lib.sh** script.
-* Write bats scripts with assertions.  
-Make sure they import the **lib.sh** file.
-
-The library provides functions that allow to write assertions with a natural language, or almost. This reduces the amount of advanced bash commands to master.
-
-
-## Examples (embedded in a BATS test)
+### Test files and result
 
 This section shows how to write unit tests using this library and BATS.
 
 ```bash
-load ../lib/lib
+load ../lib/detik
 CLIENT_NAME="kubectl"
 
 @test "verify the deployment" {
@@ -96,12 +107,12 @@ The command "bats my-tests.bats" exited with 1.
 ```
 
 
-## Library Examples (kubectl / oc commands)
+## Working with Kubectl or OC commands
 
 If you are working with a native Kubernetes cluster.
 
 ```bash
-load ../lib/lib
+load ../lib/detik
 
 # The client function.
 CLIENT_NAME="kubectl"
@@ -123,7 +134,7 @@ try "at most 5 times every 30s to get svc named 'nginx' and verify that '.spec.p
 If you work with OpenShift and would prefer to use **oc** instead of **kubectl**...
 
 ```bash
-load ../lib/lib
+load ../lib/detik
 
 # The client function.
 CLIENT_NAME="oc"
@@ -133,12 +144,64 @@ verify "there are 2 pods named 'nginx'"
 ```
 
 
-## Library Examples (helm commands)
+## Other Examples
 
-Soon...
+Examples are available under the **examples** directory.  
+It includes...
+
+* Library usage
+* Tests for a Helm package
+* Pipeline / CI integrations
 
 
-## Syntax
+## Usage
+
+### Setup
+
+* Install [BATS](https://github.com/sstephenson/bats), a testing framework for scripts.  
+BATS is a test framework for BASH and other scripts.
+* Download the **lib/detik.bash** script.  
+```bash
+wget https://raw.githubusercontent.com/vincent-zurczak/devops-e2e-tests-in-kubernetes/master/lib/lib.sh
+chmod +x lib.sh
+```
+* Write bats scripts with assertions.  
+Make sure they import the **lib/detik.bash** file.
+
+
+### Executing Tests by Hand
+
+Assuming you have built the image from the Dockerfile...
+
+```bash
+# Run the image with a volume for your project.
+# In this example, we show how to specify the proxy
+# if your organization is using one.
+docker run -ti \
+        -v $(pwd):/home/testing/sources \
+        -e http_proxy="proxy.local:3128" \
+        -e https_proxy="proxy.local:3128" \
+        detik:LATEST
+
+# Log into the cluster
+echo "It all depends on your cluster configuration"
+
+# Export the namespace for Helm (v2)
+export TILLER_NAMESPACE=<your namespace>
+
+# Execute the tests
+bats sources/tests/main.bats
+```
+
+
+### Continuous Integration
+
+An example is given for Jenkins in [the examples](examples/ci).  
+The syntax is quite simple and may be easily adapted for other solutions, such as GitLab CI,
+Tracis CI, etc.
+
+
+## Syntax Reference
 
 **Verify there is 0 or 1 resource of this type with this name pattern.**
 
@@ -182,60 +245,23 @@ try "at most <number> times every <number>s to get <resource-type> named '<regul
 ```
 
 This is a checking loop.  
-It exits if the values are found.
+It breaks the loop if the values are found.
 
 
-## Error Codes
+## Errors
+
+### Error Codes
 
 All the functions rely on the same convention.
 
 | Exit Code | Meaning |
 | --------- | ------- |
 |     0     | Everything is fine. |
-|     1     | If the query for the function was empty. |
-|     2     | If the query did not respect the syntax. |
-|     3     | If the value could not be verified when the function returned. |
+|     1     | The query for the function was empty. |
+|     2     | The query did not respect the syntax. |
+|     3     | The value could not be verified when the function returned. |
 
 
-## Installation
+### Linting
 
-Before using this, you need to install BATS.  
-BATS is a test framework for BASH and other scripts.
-Please visit [https://github.com/sstephenson/bats](https://github.com/sstephenson/bats) for more details.
-
-Then download the library script and use it in your project.  
-For the moment, it points to the snapshot version. Soon, tags will be available.
-
-```bash
-wget https://raw.githubusercontent.com/vincent-zurczak/devops-e2e-tests-in-kubernetes/master/lib/lib.sh
-chmod +x lib.sh
-```
-
-
-## Usage in CI servers
-
-A Dockerfile is available with everything necessary to execute such tests.
-That includes kubectl, helm, BATS and this script.
-
-```bash
-# Build the image
-# (you can change the kubectl and Helm versions in the script)
-./docker-build.sh
-
-# Execute the tests available in this project
-docker run -v $(pwd)/tests:/home/testing/tests vincent-zurczak/devops-e2e-tests-in-kubernetes bats tests
-
-# The image will load and execute the tests.
-# In case of success, the exit code of the container will be 0.
-# In case of error, the exit code of the container will be 1.
-```
-
-
-## Roadmap
-
-* Support "at least" and "less than" operators when couting resources.
-* Create a Docker image to embed this script and related utilities.
-* Write a blog post to explain what already exists and why this project was created.
-* Demonstrate how to play user scenarios with Selenium, in conjunction with administration commands.
-* Demonstrate how to run performance tests, in conjunction with administration commands.
 

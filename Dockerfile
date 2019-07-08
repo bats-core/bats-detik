@@ -28,9 +28,15 @@ RUN curl -LO "https://kubernetes-helm.storage.googleapis.com/helm-$HELM_VERSION-
 	ln -s "/usr/local/helm-$HELM_VERSION/linux-amd64/helm" /usr/local/bin/helm && \
 	rm -f "helm-$HELM_VERSION-linux-amd64.tar.gz"
 
-# Work directory
-RUN mkdir -p /home/testing
+# Work directory.
+# Use the same UID than Jenkins:
+# for Jenkins versions < 2.62, this is 1000
+RUN adduser -D -u 10000 testing
+USER testing
 WORKDIR /home/testing
+
+# Initialize the Helm client
+RUN helm init --client-only --skip-refresh
 
 # Add the library
 COPY ./lib /home/testing/lib
