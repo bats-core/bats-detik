@@ -129,6 +129,17 @@ verify "'.spec.ports[*].targetPort' is '8484' for services named 'nginx'"
 # You can also specify a number of attempts
 try "at most 5 times every 30s to get pods named 'nginx' and verify that 'status' is 'running'"
 try "at most 5 times every 30s to get svc named 'nginx' and verify that '.spec.ports[*].targetPort' is '8484'"
+
+# Long assertions can also be split over several lines
+try "at most 5 times every 30s " \
+    "to get svc named 'nginx' " \
+    "and verify that '.spec.ports[*].targetPort' is '8484'"
+    
+# You can also use an altered syntax, without global quotes.
+# Be careful, you must then add double quotes around single ones.
+try at most 5 times every 30s \
+    to get svc named "'nginx'" \
+    and verify that "'.spec.ports[*].targetPort'" is "'8484'"
 ```
 
 If you work with OpenShift and would prefer to use **oc** instead of **kubectl**...

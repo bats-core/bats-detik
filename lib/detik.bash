@@ -11,10 +11,16 @@
 try() {
 
 	# The syntax to use
-	regex="at most ([0-9]+) times every ([0-9]+)s to get ([a-z]+) named '([^']+)' and verify that '([^']+)' is '([^']+)'"
+	regex="at +most +([0-9]+) +times +every +([0-9]+)s +to +get +([a-z]+) +named +'([^']+)' +and +verify +that +'([^']+)' +is +'([^']+)'"
+
+	# Concatenate all the arguments into a single string
+	IFS=' '
+	exp="$*"
+	
+	# Trim the expression
+	exp=$(trim "$exp")
 
 	# Make the regular expression case-insensitive
-	exp="$1"
 	shopt -s nocasematch;
 
 	# Verify the expression and use it to build a request
@@ -74,12 +80,18 @@ try() {
 verify() {
 
 	# The syntaxes that can be used
-	regex_count_is="there is (0|1) ([a-z]+) named '([^']+)'"
-	regex_count_are="there are ([0-9]+) ([a-z]+) named '([^']+)'"
-	regex_verify="'([^']+)' is '([^']+)' for ([a-z]+) named '([^']+)'"
+	regex_count_is="there +is +(0|1) +([a-z]+) +named +'([^']+)'"
+	regex_count_are="there +are +([0-9]+) +([a-z]+) +named +'([^']+)'"
+	regex_verify="'([^']+)' +is +'([^']+)' +for +([a-z]+) +named +'([^']+)'"
+
+	# Concatenate all the arguments into a single string
+	IFS=' '
+	exp="$*"
 	
+	# Trim the expression
+	exp=$(trim "$exp")
+
 	# Make the regular expression case-insensitive
-	exp="$1"
 	shopt -s nocasematch;
 
 	# Verify the expression and use it to build a request
@@ -186,7 +198,15 @@ build_k8s_request() {
 # Prints a string in lower case.
 # @param {string} The string.
 # @return 0
-function to_lower_case() {
+to_lower_case() {
 	echo "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+
+# Trims a text.
+# @param {string} The string.
+# @return 0
+trim() {
+	echo $1 | sed -e 's/^[[:space:]]*([^[[:space:]]].*[^[[:space:]]])[[:space:]]*$/$1/'
 }
 

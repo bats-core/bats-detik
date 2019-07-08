@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load "../lib/lib"
+load "../lib/detik"
 
 
 CLIENT_NAME="mytest"
@@ -114,6 +114,28 @@ mytest() {
 }
 
 
+@test "verifying the number of PODs with the lower-case syntax (multi-lines)" {
+	run verify 	" there     are  2   pods  " \
+			" named  'nginx' "
+
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Found 2 pods named nginx (as expected)." ]
+}
+
+
+@test "verifying the number of PODs with the lower-case syntax (multi-lines, without quotes)" {
+	run verify  there     are  2   pods  \
+			 named  "'nginx'"
+
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Found 2 pods named nginx (as expected)." ]
+}
+
+
 @test "verifying the status of a POD with the lower-case syntax" {
 	run verify "'status' is 'running' for pods named 'nginx'"
 	[ "$status" -eq 0 ]
@@ -195,5 +217,29 @@ mytest() {
 	[ ${#lines[@]} -eq 2 ]
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "No resource of type 'pods' was found with the name 'ngin.+x'." ]
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax (multi-lines)" {
+	run verify "  'status'   is   'running'   for " \
+			"  pods      named   'nginx'  "
+
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax (multi-lines, without quotes)" {
+	run verify "'status'"   is   "'running'"   for \
+		pods      named   "'nginx'"
+
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
 }
 

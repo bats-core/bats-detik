@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load "../lib/lib"
+load "../lib/detik"
 
 
 @test "verifying the generated request with the predefined 'status' parameter" {

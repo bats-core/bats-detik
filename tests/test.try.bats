@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load "../lib/lib"
+load "../lib/detik"
 
 
 CLIENT_NAME="mytest"
@@ -124,5 +124,31 @@ mytest() {
 	[ ${#lines[@]} -eq 2 ]
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "No resource of type 'pods' was found with the name 'ngin.+x'." ]
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax (multi-lines)" {
+	run try "  at  most  5  times  every  5s  to  get  pods " \
+		" named  'nginx'  and " \
+		" verify  that  'status'  is  'running' "
+
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax (multi-lines, without quotes)" {
+	run try at  most  11  times  every  5s  to  get  pods \
+		named  "'nginx'"  and \
+		verify  that  "'status'"  is  "'running'"
+
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
 }
 
