@@ -3,7 +3,7 @@
 load "../lib/detik"
 
 
-CLIENT_NAME="mytest"
+DETIK_CLIENT_NAME="mytest"
 mytest() {
 	echo -e "NAME  PROP\nnginx-deployment-75675f5897-6dg9r  Running\nnginx-deployment-75675f5897-gstkw  Running"
 }
@@ -136,6 +136,48 @@ mytest() {
 }
 
 
+@test "verifying the number of PODs with the lower-case syntax (debug)" {
+	
+	td=$(date +%Y-%m-%d--%H-%M-%S)
+	path="/tmp/debug-detik--count--$td"
+	[ ! -f "$path" ]
+
+	# Enable the debug flag
+	DETIK_DEBUG="$path"
+	run verify "there are 2 pods named 'nginx'"
+	
+	# Reset the debug flag
+	DETIK_DEBUG=""
+
+	# Verify basic assertions
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Found 2 pods named nginx (as expected)." ]
+	
+	# Verify the debug file
+	[ -f "$path" ]
+	
+	rm -rf "$path.cmp"
+	exec 7<> "$path.cmp"
+
+	echo "---------" >&7
+	echo "$BATS_TEST_FILENAME" >&7
+	echo "verifying the number of PODs with the lower-case syntax (debug)" >&7
+	echo "" >&7
+	echo "Client query:" >&7
+	echo "mytest get pods -o custom-columns=NAME:.metadata.name" >&7
+	echo "" >&7
+	echo "Result:" >&7
+	echo "2" >&7
+
+	exec 7>&-
+	run diff -q "$path" "$path.cmp"
+	[ "$status" -eq 0 ]
+	[ "$output" = "" ]
+}
+
+
 @test "verifying the status of a POD with the lower-case syntax" {
 	run verify "'status' is 'running' for pods named 'nginx'"
 	[ "$status" -eq 0 ]
@@ -241,5 +283,49 @@ mytest() {
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
 	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax (debug)" {
+	
+	td=$(date +%Y-%m-%d--%H-%M-%S)
+	path="/tmp/debug-detik--state--$td"
+	[ ! -f "$path" ]
+
+	# Enable the debug flag
+	DETIK_DEBUG="$path"
+	run verify "'status' is 'running' for pods named 'nginx'"
+	
+	# Reset the debug flag
+	DETIK_DEBUG=""
+
+	# Verify basic assertions
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
+	
+	# Verify the debug file
+	[ -f "$path" ]
+	
+	rm -rf "$path.cmp"
+	exec 7<> "$path.cmp"
+
+	echo "---------" >&7
+	echo "$BATS_TEST_FILENAME" >&7
+	echo "verifying the status of a POD with the lower-case syntax (debug)" >&7
+	echo "" >&7
+	echo "Client query:" >&7
+	echo "mytest get pods -o custom-columns=NAME:.metadata.name,PROP:.status.phase" >&7
+	echo "" >&7
+	echo "Result:" >&7
+	echo "nginx-deployment-75675f5897-6dg9r  Running" >&7
+	echo "nginx-deployment-75675f5897-gstkw  Running" >&7
+
+	exec 7>&-
+	run diff -q "$path" "$path.cmp"
+	[ "$status" -eq 0 ]
+	[ "$output" = "" ]
 }
 

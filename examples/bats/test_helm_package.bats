@@ -7,7 +7,7 @@
 ###########################################
 
 load "/home/testing/lib/detik.bash"
-CLIENT_NAME="kubectl"
+DETIK_CLIENT_NAME="kubectl"
 pck_version="1.0.1"
 
 function setup() {

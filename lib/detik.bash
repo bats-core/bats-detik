@@ -106,7 +106,24 @@ verify() {
 
 		echo "Valid expression. Verification in progress..."
 		query=$(build_k8s_request "")
-		result=$(eval $CLIENT_NAME get $resource $query | grep $name | tail -n +1 | wc -l)
+		result=$(eval $DETIK_CLIENT_NAME get $resource $query | grep $name | tail -n +1 | wc -l)
+
+		if [[ "$DETIK_DEBUG" != "" ]]; then
+			exec 6<> "$DETIK_DEBUG"
+
+			echo "---------" >&6
+			echo "$BATS_TEST_FILENAME" >&6
+			echo "$BATS_TEST_DESCRIPTION" >&6
+			echo "" >&6
+			echo "Client query:" >&6
+			echo "$DETIK_CLIENT_NAME get $resource $query" >&6
+			echo "" >&6
+			echo "Result:" >&6
+			echo "$result" >&6
+		
+			exec 6>&-
+		fi
+
 		if [[ "$result" == "$card" ]]; then
 			echo "Found $result $resource named $name (as expected)."
 		else
@@ -147,8 +164,25 @@ verify_value() {
 
 	# List the items and remove the first line (the one that contains the column names)
 	query=$(build_k8s_request $property)
-	result=$(eval $CLIENT_NAME get $resource $query | grep $name | tail -n +1)
-			
+	result=$(eval $DETIK_CLIENT_NAME get $resource $query | grep $name | tail -n +1)
+
+	# Debug?
+	if [[ "$DETIK_DEBUG" != "" ]]; then
+		exec 6<> "$DETIK_DEBUG"
+
+		echo "---------" >&6
+		echo "$BATS_TEST_FILENAME" >&6
+		echo "$BATS_TEST_DESCRIPTION" >&6
+		echo "" >&6
+		echo "Client query:" >&6
+		echo "$DETIK_CLIENT_NAME get $resource $query" >&6
+		echo "" >&6
+		echo "Result:" >&6
+		echo "$result" >&6
+		
+		exec 6>&-
+	fi
+	
 	# Is the result empty?
 	if [[ "$result" == "" ]]; then
 		echo "No resource of type '$resource' was found with the name '$name'."

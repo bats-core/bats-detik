@@ -16,15 +16,14 @@ This kind of test is the ultimate set of verifications to run for a project, lon
   * [Test files and result](#test-files-and-result)
   * [Working with Kubectl or OC commands](#working-with-kubectl-or-oc-commands)
   * [Other Examples](#other-examples)
-
 * [Usage](#usage)
   * [Setup](#setup)
   * [Executing tests by hand](#executing-tests-by-hand)
   * [Continuous Integration](#continuous-integration)
-
 * [Syntax Reference](#syntax-reference)
 * [Errors](#errors)
   * [Error Codes](#error-codes)
+  * [Debugging Tests](#debugging-tests)
   * [Linting](#linting)
 
 
@@ -105,6 +104,9 @@ bats my-tests.bats
 ✓ 2 verify the undeployment
 The command "bats my-tests.bats" exited with 1.
 ```
+
+Since this project uses BATS, you can use **setup** and **teardown**
+functions to prepare and clean after every test in a file.
 
 
 ## Working with Kubectl or OC commands
@@ -261,7 +263,7 @@ It breaks the loop if the values are found.
 
 ## Errors
 
-### Error Codes
+### Error Codes
 
 All the functions rely on the same convention.
 
@@ -271,6 +273,31 @@ All the functions rely on the same convention.
 |     1     | The query for the function was empty. |
 |     2     | The query did not respect the syntax. |
 |     3     | The value could not be verified when the function returned. |
+
+
+### Debugging Tests
+
+It is possible to set a property (named **DETIK_DEBUG**) in your test so that
+intermediate results are written into a file. This can help to understand
+what is happening in the library. The value of the property is the path of the output file.
+
+Here is an example showing how to debug a test.
+
+```bash
+# Set a file to receive the debug output
+path="/tmp/debug-detik.txt"
+rm -rf $path
+
+# Enable the debug flag
+DETIK_DEBUG="$path"
+run verify "'status' is 'running' for pods named 'nginx'"
+	
+# Reset the debug flag
+DETIK_DEBUG=""
+```
+
+You can then open the **/tmp/debug-detik.txt** file and see the client query
+and its result.
 
 
 ### Linting

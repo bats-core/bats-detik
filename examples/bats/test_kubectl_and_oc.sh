@@ -4,10 +4,10 @@
 # A set of examples using DETIK functions.
 ###########################################
 
-source ../lib/lib.sh
+source ../lib/detik.bash
 
 # The client function.
-CLIENT_NAME="kubectl"
+DETIK_CLIENT_NAME="kubectl"
 
 
 #########################################
