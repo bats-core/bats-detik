@@ -35,11 +35,11 @@ podTemplate(label: label, containers: [
 			}
 			
 			stage('Lint') {
-				sh ''
+				sh 'run helm lint ./drupal'
 			}
 			
 			stage('Dry-run Deployment') {
-				sh ''
+				sh 'helm template ./drupal | kubectl apply --dry-run -f -'
 			}
 
 			stage('Build and Test') {
