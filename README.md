@@ -47,7 +47,7 @@ This section shows how to write unit tests using this library and BATS.
 
 ```bash
 load ../lib/detik
-CLIENT_NAME="kubectl"
+DETIK_CLIENT_NAME="kubectl"
 
 @test "verify the deployment" {
 	
@@ -116,8 +116,8 @@ If you are working with a native Kubernetes cluster.
 ```bash
 load ../lib/detik
 
-# The client function.
-CLIENT_NAME="kubectl"
+# The client function
+DETIK_CLIENT_NAME="kubectl"
 
 # Verify the number of PODS and services
 verify "there are 2 pods named 'nginx'"
@@ -149,8 +149,8 @@ If you work with OpenShift and would prefer to use **oc** instead of **kubectl**
 ```bash
 load ../lib/detik
 
-# The client function.
-CLIENT_NAME="oc"
+# The client function
+DETIK_CLIENT_NAME="oc"
 
 # Verify the number of PODS and services
 verify "there are 2 pods named 'nginx'"
@@ -159,7 +159,7 @@ verify "there are 2 pods named 'nginx'"
 
 ## Other Examples
 
-Examples are available under the **examples** directory.  
+Examples are available under [the eponym directory](examples/ci).  
 It includes...
 
 * Library usage
@@ -175,8 +175,8 @@ It includes...
 BATS is a test framework for BASH and other scripts.
 * Download the **lib/detik.bash** script.  
 ```bash
-wget https://raw.githubusercontent.com/vincent-zurczak/devops-e2e-tests-in-kubernetes/master/lib/lib.sh
-chmod +x lib.sh
+wget https://raw.githubusercontent.com/vincent-zurczak/devops-e2e-tests-in-kubernetes/master/lib/detik.bash
+chmod +x detik.bash
 ```
 * Write bats scripts with assertions.  
 Make sure they import the **lib/detik.bash** file.
