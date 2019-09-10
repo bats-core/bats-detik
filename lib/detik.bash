@@ -1,17 +1,17 @@
 #!/bin/bash
 
+directory=$(dirname "${BASH_SOURCE[0]}")
+source "$directory/utils.bash"
+
 
 # Retrieves values and attempts to compare values to an expected result (with retries).
 # @param {string} A text query that respect the appropriate syntax
 # @return
-#	1 If the query is empty
-#	2 If it does not respect the syntax
-#	3 If the value could not be verified after all the attempts
-#	0 Otherwise
+#	1 Empty query
+#	2 Invalid syntax
+#	3 The value could not be verified after all the attempts
+#	0 Everything is fine
 try() {
-
-	# The syntax to use
-	regex="at +most +([0-9]+) +times +every +([0-9]+)s +to +get +([a-z]+) +named +'([^']+)' +and +verify +that +'([^']+)' +is +'([^']+)'"
 
 	# Concatenate all the arguments into a single string
 	IFS=' '
@@ -28,7 +28,7 @@ try() {
 		echo "An empty expression was not expected."
 		return 1
 	
-	elif [[ "$exp" =~ $regex ]]; then
+	elif [[ "$exp" =~ $try_regex ]]; then
 		
 		# Extract parameters
 		times="${BASH_REMATCH[1]}"
@@ -73,16 +73,11 @@ try() {
 # Retrieves values and attempts to compare values to an expected result (without any retry).
 # @param {string} A text query that respect one of the supported syntaxes
 # @return
-#	1 If the query is empty
-#	2 If it does not respect the syntax
-#	3 If the elements count is incorrect
-#	0 Otherwise
+#	1 Empty query
+#	2 Invalid syntax
+#	3 The elements count is incorrect
+#	0 Everything is fine
 verify() {
-
-	# The syntaxes that can be used
-	regex_count_is="there +is +(0|1) +([a-z]+) +named +'([^']+)'"
-	regex_count_are="there +are +([0-9]+) +([a-z]+) +named +'([^']+)'"
-	regex_verify="'([^']+)' +is +'([^']+)' +for +([a-z]+) +named +'([^']+)'"
 
 	# Concatenate all the arguments into a single string
 	IFS=' '
@@ -99,7 +94,7 @@ verify() {
 		echo "An empty expression was not expected."
 		return 1
 	
-	elif [[ "$exp" =~ $regex_count_is ]] || [[ "$exp" =~ $regex_count_are ]]; then
+	elif [[ "$exp" =~ $verify_regex_count_is ]] || [[ "$exp" =~ $verify_regex_count_are ]]; then
 		card="${BASH_REMATCH[1]}"
 		resource=$(to_lower_case "${BASH_REMATCH[2]}")
 		name="${BASH_REMATCH[3]}"
@@ -108,21 +103,16 @@ verify() {
 		query=$(build_k8s_request "")
 		result=$(eval $DETIK_CLIENT_NAME get $resource $query | grep $name | tail -n +1 | wc -l)
 
-		if [[ "$DETIK_DEBUG" != "" ]]; then
-			exec 6<> "$DETIK_DEBUG"
-
-			echo "---------" >&6
-			echo "$BATS_TEST_FILENAME" >&6
-			echo "$BATS_TEST_DESCRIPTION" >&6
-			echo "" >&6
-			echo "Client query:" >&6
-			echo "$DETIK_CLIENT_NAME get $resource $query" >&6
-			echo "" >&6
-			echo "Result:" >&6
-			echo "$result" >&6
-		
-			exec 6>&-
-		fi
+		detik_debug "----DETIK-----"
+		detik_debug "$BATS_TEST_FILENAME"
+		detik_debug "$BATS_TEST_DESCRIPTION"
+		detik_debug ""
+		detik_debug "Client query:"
+		detik_debug "$DETIK_CLIENT_NAME get $resource $query"
+		detik_debug ""
+		detik_debug "Result:"
+		detik_debug "$result"
+		detik_debug "----DETIK-----"
 
 		if [[ "$result" == "$card" ]]; then
 			echo "Found $result $resource named $name (as expected)."
@@ -131,7 +121,7 @@ verify() {
 			return 3
 		fi
 	
-	elif [[ "$exp" =~ $regex_verify ]]; then
+	elif [[ "$exp" =~ $verify_regex_property_is ]]; then
 		property="${BASH_REMATCH[1]}"
 		expected_value="${BASH_REMATCH[2]}"
 		resource=$(to_lower_case "${BASH_REMATCH[3]}")
@@ -167,21 +157,16 @@ verify_value() {
 	result=$(eval $DETIK_CLIENT_NAME get $resource $query | grep $name | tail -n +1)
 
 	# Debug?
-	if [[ "$DETIK_DEBUG" != "" ]]; then
-		exec 6<> "$DETIK_DEBUG"
-
-		echo "---------" >&6
-		echo "$BATS_TEST_FILENAME" >&6
-		echo "$BATS_TEST_DESCRIPTION" >&6
-		echo "" >&6
-		echo "Client query:" >&6
-		echo "$DETIK_CLIENT_NAME get $resource $query" >&6
-		echo "" >&6
-		echo "Result:" >&6
-		echo "$result" >&6
-		
-		exec 6>&-
-	fi
+	detik_debug "----DETIK-----"
+	detik_debug "$BATS_TEST_FILENAME"
+	detik_debug "$BATS_TEST_DESCRIPTION"
+	detik_debug ""
+	detik_debug "Client query:"
+	detik_debug "$DETIK_CLIENT_NAME get $resource $query"
+	detik_debug ""
+	detik_debug "Result:"
+	detik_debug "$result"
+	detik_debug "----DETIK-----"
 	
 	# Is the result empty?
 	if [[ "$result" == "" ]]; then
@@ -226,21 +211,5 @@ build_k8s_request() {
 	fi
 	
 	echo $req
-}
-
-
-# Prints a string in lower case.
-# @param {string} The string.
-# @return 0
-to_lower_case() {
-	echo "$1" | tr '[:upper:]' '[:lower:]'
-}
-
-
-# Trims a text.
-# @param {string} The string.
-# @return 0
-trim() {
-	echo $1 | sed -e 's/^[[:space:]]*([^[[:space:]]].*[^[[:space:]]])[[:space:]]*$/$1/'
 }
 

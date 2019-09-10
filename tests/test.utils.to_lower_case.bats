@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load "../lib/detik"
+load "../lib/utils"
 
 
 @test "testing to_lower_case" {

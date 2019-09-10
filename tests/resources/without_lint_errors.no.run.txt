@@ -27,6 +27,7 @@ verify "there are 4 po named 'nginx'"
 
 # Use a regular expression for the name
 verify "there are 4 po named 'nginx.*'"
+verify there are 4 po named "'nginx.*'"
 
 
 #########################################
@@ -35,6 +36,7 @@ verify "there are 4 po named 'nginx.*'"
 
 # Basic example
 verify "'status' is 'running' for pods named 'nginx'"
+	verify "'status' is 'running' for pods named 'nginx'"
 
 # The same thing (it is case insensitive)
 verify "'status' is 'RUNNING' for pods naMed 'nginx'"
@@ -50,6 +52,7 @@ verify "'status' is 'running' for pods named 'nginx.*'"
 # Use kubectl get <resource> -o custom-columns=ALL:* to find column names.
 verify "'.status.phase' is 'running' for pods named 'nginx'"
 verify "'.spec.ports[*].targetPort' is '8484' for services named 'nginx'"
+verify "'.spec.ports[*].targetPort'" is "'8484'" for services named "'nginx'"
 
 
 #########################################

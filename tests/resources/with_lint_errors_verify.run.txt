@@ -1,0 +1,67 @@
+#!/bin/bash
+
+###########################################
+# A set of examples using DETIK functions.
+###########################################
+
+load ../lib/detik
+
+# The client function.
+DETIK_CLIENT_NAME="kubectl"
+
+
+# VERIFY
+# (Copied from test.verify.bats)
+
+run verify "there are 2 pods named 'nginx'"
+run verify "there is 1 pod named 'nginx-deployment-75675f5897-6dg9r'"
+
+# Error: missing double quote at the end
+run verify "there are 1 pods named 'nginx-deployment-75675f5897-6dg9r'
+run verify "there is 0 pod named 'nginx-deployment-inexisting'"
+run verify "there are 0 pods named 'nginx-deployment-inexisting'"
+
+# Error: missing single quote at the end
+run verify "There are 2 PODS named 'nginx"
+
+# Error: no 's' expected when "there is"
+run verify "There is 2 PODS named 'nginx'"
+
+# Error: missing quotes around nginx
+run verify "There are 2 PODS named nginx"
+
+# Error: empty statement
+run verify ""
+run verify "There are 2 pods named 'nginx-inexisting'"
+run verify "There are 2 pods named 'ngin.*'"
+run verify "There are 2 pods named 'ngin.+x'"
+run verify 	" there     are  2   pods  " \
+			" named  'nginx' "
+
+# Error: missing backslash at the end
+run verify  there     are  2   pods
+	 named  "'nginx'"
+run verify "'status' is 'running' for pods named 'nginx'"
+run verify "'.status.phase' is 'running' for pods named 'nginx'"
+run verify "'status' is 'RUNNING' For pods named 'nginx'"
+
+# Error: missing double quote at the end
+run verify "'status' is 'running' for all the pods named 'nginx'
+
+# Error: missing single quote at the end
+run verify "status is 'running' for pods named nginx'"
+run verify "'status' is 'initializing' for pods named 'nginx'"
+run verify "'status' is 'running' for pods named 'nginx-something'"
+
+# Error: missing single quote in the middle
+run verify "'status' is 'running for pods named 'ngin.*'"
+run verify "'status' is 'running' for pods named 'ngin.+x'"
+
+
+# Error: missing backslash at the end
+run verify "  'status'   is   'running'   for "
+	"  pods      named   'nginx'  "
+
+run verify "'status'"   is   "'running'"   for \
+	pods      named   "'nginx'"
+

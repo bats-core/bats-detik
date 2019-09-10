@@ -277,29 +277,91 @@ All the functions rely on the same convention.
 
 ### Debugging Tests
 
-It is possible to set a property (named **DETIK_DEBUG**) in your test so that
-intermediate results are written into a file. This can help to understand
-what is happening in the library. The value of the property is the path of the output file.
+There is a **debug** function in DETIK.  
+You can use it in your own tests. Debug traces are stored into **/tmp/detik/**.
+There is one debug file per test file.
 
-Here is an example showing how to debug a test.
+It is recommended to reset this file at beginning of every test file.
 
 ```bash
-# Set a file to receive the debug output
-path="/tmp/debug-detik.txt"
-rm -rf $path
+#!/usr/bin/env bats
 
-# Enable the debug flag
-DETIK_DEBUG="$path"
-run verify "'status' is 'running' for pods named 'nginx'"
+load "lib/utils"
+load "lib/detik"
+
+
+# Improve readability of the debug file
+setup() {
+	debug ""
+	debug  ""
+	debug  "-- $BATS_TEST_DESCRIPTION --"
+	debug  ""
+	debug  ""
+}
+
+
+@test "reset the debug file" {
+	# This function is part of DETIK too
+	reset_debug
+}
+
+
+@test "run my first test" {
+
+	# Make an assertion and output the result in the debug file.
+	run verify ...
+	debug "Command output is: $output"
+	[ "$status" -eq 0 ]
 	
-# Reset the debug flag
-DETIK_DEBUG=""
+	# ...
+}
 ```
 
-You can then open the **/tmp/debug-detik.txt** file and see the client query
-and its result.
+DETIK debug messages are silented by default.  
+To enable them, you have to set the **DEBUG_DETIK** variable. In addition to your
+own debug traces, you will see the ones from DETIK and/or its linter.
+
+Here is an example showing how to debug DETIK with a test.
+
+```bash
+# Enable the debug flag
+DEBUG_DETIK="true"
+run verify "'status' is 'running' for pods named 'nginx'"
+
+# Even if you did not log anything, DETIK did.
+# Find the debug file under /tmp/detik.
+
+# Reset the debug flag
+DEBUG_DETIK=""
+```
 
 
-### Linting
+### Linting
 
+Because Bash is not a compiled language, it is easy to make mistakes.  
+Even if the library was designed to be simple. This is why a linter was created, to help to
+locate syntax errors when writing DETIK assertions. You can use it with BATS in your tests.
+
+```bash
+#!/usr/bin/env bats
+
+load "lib/linter"
+
+@test "lint assertions" {
+
+	run lint "tests/my-tests-1.bats"
+	# echo -e "$output" > /tmp/errors.txt
+	[ "$status" -eq 0 ]
+	
+	run lint "tests/my-tests-2.bats"
+	# echo -e "$output" > /tmp/errors.txt
+	[ "$status" -eq 0 ]
+}
+```
+
+
+### Tips
+
+1. **Do not use file descriptors 3 and 4 in your tests.**  
+They are already used by BATS. And 0, 1 and 2 are default file descriptors. Use 5, 6 and higher values.
 

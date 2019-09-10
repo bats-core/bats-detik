@@ -10,11 +10,11 @@ load "/home/testing/lib/detik.bash"
 DETIK_CLIENT_NAME="kubectl"
 pck_version="1.0.1"
 
-function setup() {
+setup() {
 	cd $BATS_TEST_DIRNAME
 }
 
-function verify_helm() {
+verify_helm() {
  	helm template ../drupal | kubectl apply --dry-run -f -
 }
 

@@ -1,0 +1,67 @@
+#!/bin/bash
+
+###########################################
+# A set of examples using DETIK functions.
+###########################################
+
+load ../lib/detik
+
+# The client function.
+DETIK_CLIENT_NAME="kubectl"
+
+
+# VERIFY
+# (Copied from test.verify.bats)
+
+verify "there are 2 pods named 'nginx'"
+verify "there is 1 pod named 'nginx-deployment-75675f5897-6dg9r'"
+
+# Error: missing double quote at the end
+verify "there are 1 pods named 'nginx-deployment-75675f5897-6dg9r'
+verify "there is 0 pod named 'nginx-deployment-inexisting'"
+verify "there are 0 pods named 'nginx-deployment-inexisting'"
+
+# Error: missing single quote at the end
+verify "There are 2 PODS named 'nginx"
+
+# Error: no 's' expected when "there is"
+verify "There is 2 PODS named 'nginx'"
+
+# Error: missing quotes around nginx
+verify "There are 2 PODS named nginx"
+
+# Error: empty statement
+verify ""
+verify "There are 2 pods named 'nginx-inexisting'"
+verify "There are 2 pods named 'ngin.*'"
+verify "There are 2 pods named 'ngin.+x'"
+verify 	" there     are  2   pods  " \
+			" named  'nginx' "
+
+# Error: missing backslash at the end
+verify  there     are  2   pods
+	 named  "'nginx'"
+verify "'status' is 'running' for pods named 'nginx'"
+verify "'.status.phase' is 'running' for pods named 'nginx'"
+verify "'status' is 'RUNNING' For pods named 'nginx'"
+
+# Error: missing double quote at the end
+verify "'status' is 'running' for all the pods named 'nginx'
+
+# Error: missing single quote at the end
+verify "status is 'running' for pods named nginx'"
+verify "'status' is 'initializing' for pods named 'nginx'"
+verify "'status' is 'running' for pods named 'nginx-something'"
+
+# Error: missing single quote in the middle
+verify "'status' is 'running for pods named 'ngin.*'"
+verify "'status' is 'running' for pods named 'ngin.+x'"
+
+
+# Error: missing backslash at the end
+verify "  'status'   is   'running'   for "
+	"  pods      named   'nginx'  "
+
+verify "'status'"   is   "'running'"   for \
+	pods      named   "'nginx'"
+

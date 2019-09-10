@@ -155,16 +155,17 @@ mytest() {
 
 @test "verifying the status of a POD with the lower-case syntax (debug)" {
 	
-	td=$(date +%Y-%m-%d--%H-%M-%S)
-	path="/tmp/debug-detik--try--$td"
+	debug_filename=$(basename -- $BATS_TEST_FILENAME)
+	path="/tmp/detik/$debug_filename.debug"
+	rm -f "$path"
 	[ ! -f "$path" ]
 	
 	# Enable the debug flag
-	DETIK_DEBUG="$path"
+	DEBUG_DETIK="true"
 	run try "at most 5 times every 5s to get pods named 'nginx' and verify that 'status' is 'running'"
 
 	# Reset the debug flag
-	DETIK_DEBUG=""
+	DEBUG_DETIK=""
 
 	# Verify basic assertions
 	[ "$status" -eq 0 ]
@@ -179,7 +180,7 @@ mytest() {
 	rm -rf "$path.cmp"
 	exec 7<> "$path.cmp"
 
-	echo "---------" >&7
+	echo "----DETIK-----" >&7
 	echo "$BATS_TEST_FILENAME" >&7
 	echo "verifying the status of a POD with the lower-case syntax (debug)" >&7
 	echo "" >&7
@@ -189,6 +190,7 @@ mytest() {
 	echo "Result:" >&7
 	echo "nginx-deployment-75675f5897-6dg9r  Running" >&7
 	echo "nginx-deployment-75675f5897-gstkw  Running" >&7
+	echo "----DETIK-----" >&7
 
 	exec 7>&-
 	run diff -q "$path" "$path.cmp"
