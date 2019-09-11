@@ -1,6 +1,6 @@
 # DETIK: DevOps e2e Testing in Kubernetes
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)]()
-[![Build Status](https://travis-ci.org/vincent-zurczak/devops-e2e-tests-in-kubernetes.svg?branch=master)](https://travis-ci.org/vincent-zurczak/devops-e2e-tests-in-kubernetes)
+[![Build Status](https://travis-ci.org/vincent-zurczak/detik.svg?branch=master)](https://travis-ci.org/vincent-zurczak/detik)
 
 This repository provides utilities to **execute end-to-end tests** of applications in Kubernetes clusters. This includes performing actions on the cluster (with kubectl, oc - for OpenShift - or helm) and verifying assertions by using a natural language, or almost. This reduces the amount of advanced bash commands to master.
 
