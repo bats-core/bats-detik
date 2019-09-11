@@ -1,4 +1,4 @@
-# DETIK: DevOps e2e Tests in Kubernetes
+# DETIK: DevOps e2e Testing in Kubernetes
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)]()
 [![Build Status](https://travis-ci.org/vincent-zurczak/devops-e2e-tests-in-kubernetes.svg?branch=master)](https://travis-ci.org/vincent-zurczak/devops-e2e-tests-in-kubernetes)
 
@@ -25,6 +25,7 @@ This kind of test is the ultimate set of verifications to run for a project, lon
   * [Error Codes](#error-codes)
   * [Debugging Tests](#debugging-tests)
   * [Linting](#linting)
+  * [Tips](#tips)
 
 
 ## Objectives
