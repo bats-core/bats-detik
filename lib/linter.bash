@@ -138,9 +138,7 @@ check_line() {
 		verify_against_pattern "$part" "$try_regex_find"
 		p_find="$?"
 		
-		DEBUG_DETIK=true
-		detik_debug "p_verify=$p_verify, p_find=$p_find, part=$part"
-		DEBUG_DETIK=false
+		# detik_debug "p_verify=$p_verify, p_find=$p_find, part=$part"
 		if [[ "$p_verify" != "0" ]] && [[ "$p_find" != "0" ]]; then
 			handle_error "Invalid TRY statement at line $line_number." "$context"
 		fi

@@ -140,7 +140,7 @@ mytest() {
 	
 	debug_filename=$(basename -- $BATS_TEST_FILENAME)
 	path="/tmp/detik/$debug_filename.debug"
-	mv -f "$path" "$path.backup"
+	[ -f "$path" ] && mv "$path" "$path.backup"
 	[ ! -f "$path" ]
 
 	# Enable the debug flag
@@ -178,8 +178,8 @@ mytest() {
 	[ "$status" -eq 0 ]
 	[ "$output" = "" ]
 	
+	[ -f "$path.backup" ] && mv "$path.backup" "$path"
 	rm -rf "$path.cmp"
-	mv -f "$path.backup" "$path"
 }
 
 
@@ -295,7 +295,7 @@ mytest() {
 	
 	debug_filename=$(basename -- $BATS_TEST_FILENAME)
 	path="/tmp/detik/$debug_filename.debug"
-	mv -f "$path" "$path.backup"
+	[ -f "$path" ] && mv "$path" "$path.backup"
 	[ ! -f "$path" ]
 
 	# Enable the debug flag
@@ -336,5 +336,5 @@ mytest() {
 	[ "$output" = "" ]
 	
 	rm -rf "$path.cmp"
-	mv -f "$path.backup" "$path"
+	[ -f "$path.backup" ] && mv "$path.backup" "$path"
 }
