@@ -21,6 +21,9 @@ This kind of test is the ultimate set of verifications to run for a project, lon
   * [Executing tests by hand](#executing-tests-by-hand)
   * [Continuous Integration](#continuous-integration)
 * [Syntax Reference](#syntax-reference)
+  * [Counting Resources](#counting-resources)
+  * [Verifying Property Values](#verifying-property-values)
+  * [Property Names](#property-names)
 * [Errors](#errors)
   * [Error Codes](#error-codes)
   * [Debugging Tests](#debugging-tests)
@@ -63,6 +66,9 @@ DETIK_CLIENT_NAME="kubectl"
 	run verify "there is 1 service named 'nginx'"
 	[ "$status" -eq 0 ]
 	
+	run try "at most 5 times every 30s to find 2 pods named 'nginx' with 'status' being 'running'"
+	[ "$status" -eq 0 ]
+	
 	run try "at most 5 times every 30s to get pods named 'nginx' and verify that 'status' is 'running'"
 	[ "$status" -eq 0 ]
 }
@@ -75,7 +81,7 @@ DETIK_CLIENT_NAME="kubectl"
 	
 	sleep 20
 	
-	run verify "there are 0 pods named 'nginx'"
+	run try "at most 5 times every 5s to find 0 pod named 'nginx' with 'status' being 'running'"
 	[ "$status" -eq 0 ]
 	
 	run verify "there is 0 service named 'nginx'"
@@ -217,28 +223,76 @@ Tracis CI, etc.
 
 ## Syntax Reference
 
-**Verify there is 0 or 1 resource of this type with this name pattern.**
+### Counting Resources
+
+Verify there are N resources of this type with this name pattern.
 
 ```bash
+# Expecting 0 or 1 instance
 verify "there is <0 or 1> <resource-type> named '<regular-expression>'"
+
+# Expecting more than 1 instance
+verify "there are <number> <resource-type> named '<regular-expression>'"
 ```
 
 *resource-type* is one of the K8s ones (e.g. `pods`, `po`, `services`, `svc`...).  
 See [https://kubernetes.io/docs/reference/kubectl/overview/#resource-types](https://kubernetes.io/docs/reference/kubectl/overview/#resource-types) for a complete reference.
 
-**Verify there are N resources of this type with this name pattern.**
+This simple assertion may fail sometimes.  
+As an example, if you count the number of PODs, run your test and then kill the POD, they will still
+be listed, with the TERMINATING state. So, moest of the time, you will want to verify the number of instances
+with a given property value. Example: count the number of PODs with a given name pattern and having the `started` status.
+Hence this additional syntax.
 
 ```bash
-verify "there are <number> <resource-type> named '<regular-expression>'"
+# Expecting 0 or 1 instance
+try "at most <number> times every <number>s \
+	to find <0 or 1> <resource-type> named '<regular-expression>' \
+	with '<property-name>' being '<expected-value>'"
+
+# Expecting more than 1 instance
+try "at most <number> times every <number>s \
+	to find <number> <resource-type> named '<regular-expression>' \
+	with '<property-name>' being '<expected-value>'"
 ```
 
-**Verify the property of a set of resources of this type with this name pattern.**
+This is a checking loop.  
+It breaks the loop if as soon as the assertion is verified. If it reaches the end of the loop
+with having been verified, an error is thrown. Please, refer to [this section](#property-names) for details
+about the property names.
+
+This assertion is useful for PODs, whose life cycle changes take time.  
+For services, you may directly use the simple count assertions.
+
+
+### Verifying Property Values
+
+Verify the property of a set of resources of this type with this name pattern.
 
 ```bash
 verify "'<property-name>' is '<expected-value>' for <resource-type> named '<regular-expression>'"
 ```
 
-*property-name* if one of the column names supported by K8s.  
+Attempt to verify the property of a set of resources of this type with this name pattern.
+
+```bash
+try "at most <number> times every <number>s \
+	to get <resource-type> named '<regular-expression>' \
+	and verify that '<property-name>' is '<expected-value>'"
+```
+
+This is a checking loop.  
+It breaks the loop if as soon as the assertion is verified. If it reaches the end of the loop
+with having been verified, an error is thrown. Please, refer to [this section](#property-names) for details
+about the property names.
+
+This assertion verifies all the instances have this property value.
+But unlike the assertion type to count resources, you do not verify how many instances have this value.
+
+
+### Property Names
+
+In all assertions, *property-name* if one of the column names supported by K8s.  
 See https://kubernetes.io/docs/reference/kubectl/overview/#custom-columns  
 You can also find column names by using `kubectl get <resource-type> -o custom-columns=ALL:*`.
 
@@ -252,15 +306,6 @@ To ease the writing of assertions, some aliases are proposed by the library.
 
 Other aliases may appear later.
 
-**Attempt to verify the property of a set of resources of this type with this name pattern.**
-
-```bash
-try "at most <number> times every <number>s to get <resource-type> named '<regular-expression>' and verify that '<property-name>' is '<expected-value>'"
-```
-
-This is a checking loop.  
-It breaks the loop if the values are found.
-
 
 ## Errors
 
@@ -273,7 +318,7 @@ All the functions rely on the same convention.
 |     0     | Everything is fine. |
 |     1     | The query for the function was empty. |
 |     2     | The query did not respect the syntax. |
-|     3     | The value could not be verified when the function returned. |
+|     3     | The assertion could not be verified when the function returned. |
 
 
 ### Debugging Tests

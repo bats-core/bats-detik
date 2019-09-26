@@ -41,4 +41,3 @@ load "../lib/detik"
 	[ ${#lines[@]} -eq 1 ]
 	[ "${lines[0]}" = "-o custom-columns=NAME:.metadata.name,PROP:.spec.ports[*].targetPort" ]
 }
-

@@ -9,7 +9,7 @@ source "$directory/utils.bash"
 # @return
 #	1 Empty query
 #	2 Invalid syntax
-#	3 The value could not be verified after all the attempts
+#	3 The assertion could not be verified after all the attempts
 #	0 Everything is fine
 try() {
 
@@ -27,8 +27,18 @@ try() {
 	if [[ "$exp" == "" ]]; then
 		echo "An empty expression was not expected."
 		return 1
+	fi
 	
-	elif [[ "$exp" =~ $try_regex ]]; then
+	# Let's verify the syntax
+	times=""
+	delay=""
+	resource=""
+	name=""
+	property=""
+	expected_value=""
+	expected_count=""
+	
+	if [[ "$exp" =~ $try_regex_verify ]]; then
 		
 		# Extract parameters
 		times="${BASH_REMATCH[1]}"
@@ -37,16 +47,32 @@ try() {
 		name="${BASH_REMATCH[4]}"
 		property="${BASH_REMATCH[5]}"
 		expected_value=$(to_lower_case "${BASH_REMATCH[6]}")
+	
+	elif [[ "$exp" =~ $try_regex_find ]]; then
 		
+		# Extract parameters
+		times="${BASH_REMATCH[1]}"
+		delay="${BASH_REMATCH[2]}"
+		expected_count="${BASH_REMATCH[3]}"
+		resource=$(to_lower_case "${BASH_REMATCH[4]}")
+		name="${BASH_REMATCH[5]}"
+		property="${BASH_REMATCH[6]}"
+		expected_value=$(to_lower_case "${BASH_REMATCH[7]}")
+	fi
+	
+	# Do we have something?
+	if [[ "$times" != "" ]]; then
+	 
 		# Prevent line breaks from being removed in command results
 		IFS=""
 		
+		# Start the loop
 		echo "Valid expression. Verification in progress..."
 		code=0
 		for ((i=1; i<=$times; i++)); do
 
 			# Verify the value
-			verify_value $property $expected_value $resource $name
+			verify_value $property $expected_value $resource $name "$expected_count"
 			code=$?
 	
 			# Break the loop prematurely?
@@ -62,11 +88,11 @@ try() {
 		
 		## Error code
 		return $code
+	fi	
 
-	else
-		echo "Invalid expression: it does not respect the expected syntax."
-		return 2
-	fi
+	# Default behavior
+	echo "Invalid expression: it does not respect the expected syntax."
+	return 2
 }
 
 
@@ -143,7 +169,13 @@ verify() {
 
 # Verifies the value of a column for a set of elements.
 # @param {string} A K8s column or one of the supported aliases.
-# @return the number of elements with the wrong value
+# @param {string} The expected value.
+# @param {string} The resouce type (e.g. pod).
+# @param {string} The resource name or regex.
+# @param {integer} a.k.a. "expected_count": the expected number of elements having this property (optional)
+# @return 
+# 		If "expected_count" was NOT set: the number of elements with the wrong value.
+#		If "expected_count" was set: 101 if the elements count is not right, 0 otherwise.
 verify_value() {
 
 	# Make the parameters readable
@@ -151,6 +183,7 @@ verify_value() {
 	expected_value=$(to_lower_case "$2")
 	resource="$3"
 	name="$4"
+	expected_count="$5"
 
 	# List the items and remove the first line (the one that contains the column names)
 	query=$(build_k8s_request $property)
@@ -166,9 +199,14 @@ verify_value() {
 	detik_debug ""
 	detik_debug "Result:"
 	detik_debug "$result"
+	if [[ "$expected_count" != "" ]]; then
+		detik_debug ""
+		detik_debug "Expected count: $expected_count"
+	fi
 	detik_debug "----DETIK-----"
 	
 	# Is the result empty?
+	empty=0
 	if [[ "$result" == "" ]]; then
 		echo "No resource of type '$resource' was found with the name '$name'."
 	fi
@@ -176,6 +214,7 @@ verify_value() {
 	# Verify the result
 	IFS=$'\n'
 	invalid=0
+	valid=0
 	for line in $result; do
 				
 		# Keep the second column (property to verify)
@@ -187,8 +226,19 @@ verify_value() {
 			invalid=$((invalid + 1))
 		else
 			echo "$element has the right value ($value)."
+			valid=$((valid + 1))
 		fi
 	done
+	
+	# Do we have the right number of elements?
+	if [[ "$expected_count" != "" ]]; then
+		if [[ "$valid" != "$expected_count" ]]; then
+			echo "Expected $expected_count $resource named $name to have this value ($expected_value). Found $valid."
+			invalid=101
+		else
+			invalid=0
+		fi
+	fi
 	
 	return $invalid
 }

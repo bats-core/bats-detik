@@ -27,4 +27,3 @@ target="/tmp/detik/$debug_filename.debug"
 	
 	[ ! -f "$target" ]
 }
-

@@ -25,4 +25,3 @@ load "../lib/utils"
 	[ "$status" -eq 0 ]
 	[ "$output" = "This is a sentence." ]
 }
-

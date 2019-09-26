@@ -64,4 +64,3 @@ verify "  'status'   is   'running'   for "
 
 verify "'status'"   is   "'running'"   for \
 	pods      named   "'nginx'"
-

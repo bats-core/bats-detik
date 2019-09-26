@@ -1,0 +1,47 @@
+#!/bin/bash
+
+###########################################
+# A set of examples using DETIK functions.
+###########################################
+
+load ../lib/detik
+
+# The client function.
+DETIK_CLIENT_NAME="kubectl"
+
+
+# TRY
+# (Copied from test.try.bats)
+
+# Error: missing double quote at the end
+try "at most 5 times every 5s to find 2 pods named 'nginx' with 'status' being 'running'
+try "at most 5 times every 5s to find 2 pods named 'nginx' with '.status.phase' being 'running'"
+
+# Error: missing quote before nginx
+try "at most 5 times eVery 5s to find 2 pods named nginx' with 'status' being 'RUNNING'"
+
+# Error: the "most" keyword being missing
+try "at most 5 times VERY 5hours to find 2 pods named 'nginx' with 'status' being 'RUNNING'"
+
+# Error: missing time unit
+try "at most 5 times every 5 to find 2 pods named 'nginx' with 'status' being running"
+
+# Error: empty string
+try ""
+
+try "at most 1 times every 1s to find 2 pods named 'nginx' with 'status' being 'initializing'"
+try "at most 2 times every 1s to find 2 pods named 'nginx' with 'status' being 'initializing'"
+try "at most 3 times every 1s to find 2 pods named 'nginx' with 'status' being 'initializing'"
+
+try "at most 1 times every 1s to find 2 pods named 'nginx-something' with 'status' being 'running'"
+try "at most 1 times every 1s to find 2 pods named 'ngin.*' with 'status' being 'running'"
+try "at most 1 times every 1s to find 2 pods named 'ngin.+x' with 'status' being 'running'"
+
+# Error: missing backslash at the end of the line
+try "  at  most  5  times  every  5s  to  find  2  pods "
+	" named  'nginx' " \
+	" with  'status'  being  'running' "
+
+try at  most  11  times  every  5s  to  find 2  pods \
+	named  "'nginx'"  \
+	with  "'status'"  being  "'running'"

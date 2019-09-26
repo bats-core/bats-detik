@@ -79,6 +79,29 @@ try "at most 2 times every 30s to get svc named 'nginx' and verify that '.spec.p
 
 
 #########################################
+# Counting objects (with retries and properties)
+#########################################
+
+# Basic example
+try "at most 5 times every 5s to find 2 pods named 'nginx' with 'status' being 'running'"
+
+# The same thing (it is case insensitive)
+try "at most 5 times every 15s to FIND 2 pods named 'nginx' with 'status' being 'RUNNING'"
+
+# Use short names for resources ('po' instead of 'pods')
+# See https://kubernetes.io/docs/reference/kubectl/overview/#resource-types
+try "at most 5 times every 5s to find 0 po named 'nginx' with 'status' being 'running'"
+
+# Use a regular expression for the name
+try "at most 2 times every 30s to find 1 po named '^ng.*nx' with 'status' being 'running'"
+
+# You can also use column names
+# Use kubectl get <resource> -o custom-columns=ALL:* to find column names.
+try "at most 2 times every 30s to find 4 po named 'nginx' with '.status.phase' being 'running'"
+try "at most 2 times every 30s to find 1 svc named 'nginx' with '.spec.ports[*].targetPort' being '8484'"
+
+
+#########################################
 # Formatting
 #########################################
 
@@ -92,4 +115,7 @@ try "at most 2 times every 30s "\
 try at most 2 times every 30s \
     to get svc named "'nginx'" and \
     verify that "'.spec.ports[*].targetPort'" is "'8484'"
-
+    
+try "at most 2 times every 30s "\
+	"to find 1 svc named 'nginx' "\
+	"with '.spec.ports[*].targetPort' being '8484'"

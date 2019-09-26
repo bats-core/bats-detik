@@ -78,8 +78,18 @@ lint() {
 		line=""
 	done < "$1"
 
-	echo "$verified_entries_count DETIK queries were verified."
-	echo "$errors_count DETIK queries were found to be invalid or malformed."
+	# Output
+	if [[ "$verified_entries_count" == "1" ]]; then
+		echo "1 DETIK query was verified."
+	else
+		echo "$verified_entries_count DETIK queries were verified."
+	fi
+	
+	if [[ "$errors_count" == "1" ]]; then
+		echo "1 DETIK query was found to be invalid or malformed."
+	else
+		echo "$errors_count DETIK queries were found to be invalid or malformed."
+	fi
 
 	# Prepare the result
 	res="$errors_count"
@@ -122,11 +132,16 @@ check_line() {
 		part=$(clean_regex_part "${BASH_REMATCH[2]}")
 		context="$context\nRegex part:  $part"
 
-		verify_against_pattern "$part" "$try_regex"
-		p_try="$?"
+		verify_against_pattern "$part" "$try_regex_verify"
+		p_verify="$?"
 		
-		# detik_debug "p_try=$p_try, part=$part"
-		if [[ "$p_try" != "0" ]]; then
+		verify_against_pattern "$part" "$try_regex_find"
+		p_find="$?"
+		
+		DEBUG_DETIK=true
+		detik_debug "p_verify=$p_verify, p_find=$p_find, part=$part"
+		DEBUG_DETIK=false
+		if [[ "$p_verify" != "0" ]] && [[ "$p_find" != "0" ]]; then
 			handle_error "Invalid TRY statement at line $line_number." "$context"
 		fi
 
@@ -229,4 +244,3 @@ handle_error() {
 	echo "$1"
 	errors_count=$((errors_count + 1))
 }
-

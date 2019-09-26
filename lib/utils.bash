@@ -2,7 +2,8 @@
 
 
 # The regex for the "try" key word
-try_regex="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +([a-z]+) +named +'([^']+)' +and +verify +that +'([^']+)' +is +'([^']+)'$"
+try_regex_verify="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +([a-z]+) +named +'([^']+)' +and +verify +that +'([^']+)' +is +'([^']+)'$"
+try_regex_find="^at +most +([0-9]+) +times +every +([0-9]+)s +to +find +([0-9]+) +([a-z]+) +named +'([^']+)' +with +'([^']+)' +being +'([^']+)'$"
 
 # The regex for the "verify" key word
 verify_regex_count_is="^there +is +(0|1) +([a-z]+) +named +'([^']+)'$"
@@ -31,7 +32,7 @@ trim() {
 # @param {string} The string.
 # @return 0
 trim_ansi_codes() {
-        echo $1 | sed -e 's/[[:cntrl:]]\[[0-9;]*[a-zA-Z]//g'
+	echo $1 | sed -e 's/[[:cntrl:]]\[[0-9;]*[a-zA-Z]//g'
 }
 
 
@@ -41,7 +42,7 @@ trim_ansi_codes() {
 debug() {
 	debug_filename=$(basename -- $BATS_TEST_FILENAME)
 	mkdir -p /tmp/detik
-        echo -e "$1" >> "/tmp/detik/$debug_filename.debug"
+	echo -e "$1" >> "/tmp/detik/$debug_filename.debug"
 }
 
 
@@ -72,4 +73,3 @@ reset_detik_debug() {
 		reset_debug
 	fi
 }
-

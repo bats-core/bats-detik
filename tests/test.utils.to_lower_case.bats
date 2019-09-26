@@ -17,4 +17,3 @@ load "../lib/utils"
 	[ "$status" -eq 0 ]
 	[ "$output" = "with some numbers: 45, 18" ]
 }
-

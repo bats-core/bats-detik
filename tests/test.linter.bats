@@ -61,10 +61,10 @@ setup() {
 	run verify_against_pattern "\"'toto'\"" "'toto'"
 	[ "$status" -eq 0 ]
 	
-	run verify_against_pattern "at most 5 times eVery 5s to GET pods named 'nginx' and verify that 'status' is 'RUNNING'" "$try_regex"
+	run verify_against_pattern "at most 5 times eVery 5s to GET pods named 'nginx' and verify that 'status' is 'RUNNING'" "$try_regex_verify"
 	[ "$status" -eq 0 ]
 	
-	run verify_against_pattern "at most 5 times eVery 5s to GET pods named nginx' and verify that 'status' is 'RUNNING'" "$try_regex"
+	run verify_against_pattern "at most 5 times eVery 5s to GET pods named nginx' and verify that 'status' is 'RUNNING'" "$try_regex_verify"
 	[ "$status" -eq 1 ]
 }
 
@@ -85,7 +85,7 @@ setup() {
 
 	run lint "$BATS_TEST_DIRNAME/resources/without_lint_errors.run.txt"
 	[ ${#lines[@]} -eq 2 ]
-	[ "${lines[0]}" = "22 DETIK queries were verified." ]
+	[ "${lines[0]}" = "29 DETIK queries were verified." ]
 	[ "${lines[1]}" = "0 DETIK queries were found to be invalid or malformed." ]
 	[ "$status" -eq 0 ]
 }
@@ -95,15 +95,15 @@ setup() {
 
 	run lint "$BATS_TEST_DIRNAME/resources/without_lint_errors.no.run.txt"
 	[ ${#lines[@]} -eq 2 ]
-	[ "${lines[0]}" = "22 DETIK queries were verified." ]
+	[ "${lines[0]}" = "29 DETIK queries were verified." ]
 	[ "${lines[1]}" = "0 DETIK queries were found to be invalid or malformed." ]
 	[ "$status" -eq 0 ]
 }
 
 
-@test "checking the linter with a file with lint errors on TRY (with RUN)" {
+@test "checking the linter with a file with lint errors on TRY to VERIFY (with RUN)" {
 
-	run lint "$BATS_TEST_DIRNAME/resources/with_lint_errors_try.run.txt"
+	run lint "$BATS_TEST_DIRNAME/resources/with_lint_errors_try_to_verify.run.txt"
 	[ ${#lines[@]} -eq 8 ]
 	[ "${lines[0]}" = "Invalid TRY statement at line 17." ]
 	[ "${lines[1]}" = "Invalid TRY statement at line 21." ]
@@ -117,9 +117,41 @@ setup() {
 }
 
 
-@test "checking the linter with a file with lint errors on TRY (without RUN)" {
+@test "checking the linter with a file with lint errors on TRY to FIND (without RUN)" {
 
-	run lint "$BATS_TEST_DIRNAME/resources/with_lint_errors_try.no.run.txt"
+	run lint "$BATS_TEST_DIRNAME/resources/with_lint_errors_try_to_find.no.run.txt"
+	[ ${#lines[@]} -eq 8 ]
+	[ "${lines[0]}" = "Invalid TRY statement at line 17." ]
+	[ "${lines[1]}" = "Invalid TRY statement at line 21." ]
+	[ "${lines[2]}" = "Invalid TRY statement at line 24." ]
+	[ "${lines[3]}" = "Invalid TRY statement at line 27." ]
+	[ "${lines[4]}" = "Empty statement at line 30." ]
+	[ "${lines[5]}" = "Invalid TRY statement at line 41." ]
+	[ "${lines[6]}" = "14 DETIK queries were verified." ]
+	[ "${lines[7]}" = "6 DETIK queries were found to be invalid or malformed." ]
+	[ "$status" -eq 6 ]
+}
+
+
+@test "checking the linter with a file with lint errors on TRY to FIND (with RUN)" {
+
+	run lint "$BATS_TEST_DIRNAME/resources/with_lint_errors_try_to_find.run.txt"
+	[ ${#lines[@]} -eq 8 ]
+	[ "${lines[0]}" = "Invalid TRY statement at line 17." ]
+	[ "${lines[1]}" = "Invalid TRY statement at line 21." ]
+	[ "${lines[2]}" = "Invalid TRY statement at line 24." ]
+	[ "${lines[3]}" = "Invalid TRY statement at line 27." ]
+	[ "${lines[4]}" = "Empty statement at line 30." ]
+	[ "${lines[5]}" = "Invalid TRY statement at line 41." ]
+	[ "${lines[6]}" = "14 DETIK queries were verified." ]
+	[ "${lines[7]}" = "6 DETIK queries were found to be invalid or malformed." ]
+	[ "$status" -eq 6 ]
+}
+
+
+@test "checking the linter with a file with lint errors on TRY to VERIFY (without RUN)" {
+
+	run lint "$BATS_TEST_DIRNAME/resources/with_lint_errors_try_to_verify.no.run.txt"
 	[ ${#lines[@]} -eq 8 ]
 	[ "${lines[0]}" = "Invalid TRY statement at line 17." ]
 	[ "${lines[1]}" = "Invalid TRY statement at line 21." ]
@@ -136,7 +168,6 @@ setup() {
 @test "checking the linter with a file with lint errors on VERIFY (with RUN)" {
 
 	run lint "$BATS_TEST_DIRNAME/resources/with_lint_errors_verify.run.txt"
-	echo "$output" > /tmp/merde.txt
 	[ ${#lines[@]} -eq 12 ]
 	[ "${lines[0]}" = "Invalid VERIFY statement at line 20." ]
 	[ "${lines[1]}" = "Invalid VERIFY statement at line 25." ]
@@ -157,7 +188,6 @@ setup() {
 @test "checking the linter with a file with lint errors on VERIFY (without RUN)" {
 
 	run lint "$BATS_TEST_DIRNAME/resources/with_lint_errors_verify.no.run.txt"
-	echo "$output" > /tmp/merde.txt
 	[ ${#lines[@]} -eq 12 ]
 	[ "${lines[0]}" = "Invalid VERIFY statement at line 20." ]
 	[ "${lines[1]}" = "Invalid VERIFY statement at line 25." ]
@@ -173,4 +203,3 @@ setup() {
 	[ "${lines[11]}" = "10 DETIK queries were found to be invalid or malformed." ]
 	[ "$status" -eq 10 ]
 }
-

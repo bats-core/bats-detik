@@ -45,4 +45,3 @@ try "  at  most  5  times  every  5s  to  get  pods "
 try at  most  11  times  every  5s  to  get  pods \
 	named  "'nginx'"  and \
 	verify  that  "'status'"  is  "'running'"
-
