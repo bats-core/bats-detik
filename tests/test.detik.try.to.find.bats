@@ -253,3 +253,38 @@ mytest() {
 	[ -f "$path.backup" ] && mv "$path.backup" "$path"
 	rm -rf "$path.cmp"
 }
+
+
+my_consul_test() {
+
+	consul_cpt=0
+	if [[ -f /tmp/my-consul-test.txt ]]; then
+		consul_cpt=$(cat /tmp/my-consul-test.txt)
+	fi
+	
+	if [[ "$consul_cpt" == "2" ]]; then
+		echo -e "NAME  PROP\nconsul-for-vault-0  Running\nconsul-for-vault-1  Running\nconsul-for-vault-2  Running"
+	fi
+	
+	consul_cpt=$(($consul_cpt + 1))
+	echo "$consul_cpt" > /tmp/my-consul-test.txt
+}
+
+
+@test "trying to find Consul PODs" {
+
+	DETIK_CLIENT_NAME="my_consul_test"
+	rm -rf /tmp/my-consul-test.txt
+	
+	run try "at most 5 times every 1s to find 3 pods named 'consul-for-vault' with 'status' being 'running'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 8 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "No resource of type 'pods' was found with the name 'consul-for-vault'." ]
+	[ "${lines[2]}" = "Expected 3 pods named consul-for-vault to have this value (running). Found 0." ]
+	[ "${lines[3]}" = "No resource of type 'pods' was found with the name 'consul-for-vault'." ]
+	[ "${lines[4]}" = "Expected 3 pods named consul-for-vault to have this value (running). Found 0." ]
+	[ "${lines[5]}" = "consul-for-vault-0 has the right value (running)." ]
+	[ "${lines[6]}" = "consul-for-vault-1 has the right value (running)." ]
+	[ "${lines[7]}" = "consul-for-vault-2 has the right value (running)." ]
+}
