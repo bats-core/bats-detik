@@ -127,7 +127,7 @@ verify() {
 
 		echo "Valid expression. Verification in progress..."
 		query=$(build_k8s_request "")
-		result=$(eval $DETIK_CLIENT_NAME get $resource $query | grep $name | tail -n +1 | wc -l)
+		result=$(eval $DETIK_CLIENT_NAME get $resource $query | grep $name | tail -n +1 | wc -l | tr -d '[:space:]')
 
 		detik_debug "----DETIK-----"
 		detik_debug "$BATS_TEST_FILENAME"
