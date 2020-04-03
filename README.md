@@ -1,6 +1,6 @@
 # DETIK: DevOps e2e Testing in Kubernetes
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)]()
-[![Build Status](https://travis-ci.org/vincent-zurczak/detik.svg?branch=master)](https://travis-ci.org/vincent-zurczak/detik)
+[![Build Status](https://travis-ci.org/bats-core/bats-detik.svg?branch=master)](https://travis-ci.org/bats-core/bats-detik)
 
 This repository provides utilities to **execute end-to-end tests** of applications in Kubernetes clusters. This includes performing actions on the cluster (with kubectl, oc - for OpenShift - or helm) and verifying assertions by using a natural language, or almost. This reduces the amount of advanced bash commands to master.
 
@@ -178,15 +178,18 @@ It includes...
 
 ### Setup
 
-* Install [BATS](https://github.com/sstephenson/bats), a testing framework for scripts.  
+* Install [BATS](https://github.com/bats-core/bats-core), a testing framework for scripts.  
 BATS is a test framework for BASH and other scripts.
 * Download the **lib/detik.bash** script.  
 ```bash
-wget https://raw.githubusercontent.com/vincent-zurczak/devops-e2e-tests-in-kubernetes/master/lib/detik.bash
-chmod +x detik.bash
+wget https://raw.githubusercontent.com/bats-core/bats-detik/master/lib/detik.bash
+wget https://raw.githubusercontent.com/bats-core/bats-detik/master/lib/linter.bash
+wget https://raw.githubusercontent.com/bats-core/bats-detik/master/lib/utils.bash
+chmod +x *.bash
 ```
 * Write bats scripts with assertions.  
-Make sure they import the **lib/detik.bash** file.
+Make sure they import the **lib/utils.bash** and **lib/detik.bash** files.
+* Import the **lib/linter.bash** file to verify the linting of DETIK assertions.
 
 
 ### Executing Tests by Hand
@@ -201,7 +204,7 @@ docker run -ti \
         -v $(pwd):/home/testing/sources \
         -e http_proxy="proxy.local:3128" \
         -e https_proxy="proxy.local:3128" \
-        detik:LATEST
+        bats-detik:LATEST
 
 # Log into the cluster
 echo "It all depends on your cluster configuration"
@@ -410,4 +413,3 @@ load "lib/linter"
 
 1. **Do not use file descriptors 3 and 4 in your tests.**  
 They are already used by BATS. And 0, 1 and 2 are default file descriptors. Use 5, 6 and higher values.
-
