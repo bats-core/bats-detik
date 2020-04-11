@@ -194,7 +194,7 @@ Make sure they import the **lib/utils.bash** and **lib/detik.bash** files.
 
 ### Executing Tests by Hand
 
-Assuming you have built the image from the Dockerfile...
+Assuming you have built the image from the sample Dockerfile...
 
 ```bash
 # Run the image with a volume for your project.
