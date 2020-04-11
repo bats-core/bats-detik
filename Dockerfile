@@ -10,11 +10,13 @@ RUN apk --no-cache add \
     libc6-compat \
     openssh-client \
     bash
-    
-# Install BATS
-RUN git clone https://github.com/sstephenson/bats.git && \
-	cd bats && \
-	./install.sh /usr/local
+
+# Install BATS 1.1.0
+RUN curl -LO https://github.com/bats-core/bats-core/archive/v1.1.0.zip && \
+	unzip -q -d /tmp v1.1.0.zip && \
+	cd /tmp/bats-core-1.1.0 && \
+	./install.sh /usr/local && \
+	rm -rf /tmp/bats-core-1.1.0
 
 # Install kubectl
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl" && \
