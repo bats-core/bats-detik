@@ -50,7 +50,9 @@ This kind of test is the ultimate set of verifications to run for a project, lon
 This section shows how to write unit tests using this library and BATS.
 
 ```bash
-load ../lib/detik
+load "lib/utils"
+load "lib/detik"
+
 DETIK_CLIENT_NAME="kubectl"
 
 @test "verify the deployment" {
@@ -121,10 +123,15 @@ functions to prepare and clean after every test in a file.
 If you are working with a native Kubernetes cluster.
 
 ```bash
-load ../lib/detik
+load "lib/utils"
+load "lib/detik"
 
 # The client function
 DETIK_CLIENT_NAME="kubectl"
+
+# If you want to work in a specific namespace.
+# If not set, queries will be run in the default namespace.
+DETIK_CLIENT_NAMESPACE="my-specific-namespace"
 
 # Verify the number of PODS and services
 verify "there are 2 pods named 'nginx'"
@@ -154,7 +161,8 @@ try at most 5 times every 30s \
 If you work with OpenShift and would prefer to use **oc** instead of **kubectl**...
 
 ```bash
-load ../lib/detik
+load "lib/utils"
+load "lib/detik"
 
 # The client function
 DETIK_CLIENT_NAME="oc"
@@ -321,7 +329,7 @@ All the functions rely on the same convention.
 |     0     | Everything is fine. |
 |     1     | The query for the function was empty. |
 |     2     | The query did not respect the syntax. |
-|     3     | The assertion could not be verified when the function returned. |
+|     3     | The assertion could not be verified when the function returned. It may also indicate an error with the K8s client. |
 
 
 ### Debugging Tests
@@ -366,7 +374,7 @@ setup() {
 }
 ```
 
-DETIK debug messages are silented by default.  
+DETIK debug messages are silenced by default.  
 To enable them, you have to set the **DEBUG_DETIK** variable. In addition to your
 own debug traces, you will see the ones from DETIK and/or its linter.
 
@@ -393,7 +401,7 @@ locate syntax errors when writing DETIK assertions. You can use it with BATS in 
 
 ```bash
 #!/usr/bin/env bats
-
+load "lib/utils"
 load "lib/linter"
 
 @test "lint assertions" {

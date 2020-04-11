@@ -4,7 +4,20 @@ load "../lib/detik"
 
 
 DETIK_CLIENT_NAME="mytest"
+DETIK_CLIENT_NAMESPACE=""
 mytest() {
+	# The namespace should not appear (it is set in 1st position)
+	[[ "$1" != "--namespace=test_ns" ]] || return 1
+
+	# Return the result
+	echo -e "NAME  PROP\nnginx-deployment-75675f5897-6dg9r  Running\nnginx-deployment-75675f5897-gstkw  Running"
+}
+
+mytest_with_namespace() {
+	# A namespace is expected as the first argument
+	[[ "$1" == "--namespace=test_ns" ]] || return 1
+
+	# Return the result
 	echo -e "NAME  PROP\nnginx-deployment-75675f5897-6dg9r  Running\nnginx-deployment-75675f5897-gstkw  Running"
 }
 
@@ -27,6 +40,26 @@ mytest() {
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
 	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
+}
+
+
+@test "trying to find 2 PODs with the lower-case syntax (and a different K8s namespace)" {
+	DETIK_CLIENT_NAME="mytest_with_namespace"
+	DETIK_CLIENT_NAMESPACE="test_ns"
+	DEBUG_DETIK="true"
+
+	run try "at most 1 times every 5s to find 2 pods named 'nginx' with 'status' being 'running'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
+
+	# Running the same request with the invalid client will throw an error
+	# (the namespace is not expected in this function)
+	DETIK_CLIENT_NAME="mytest"
+	run try "at most 1 times every 5s to find 2 pods named 'nginx' with 'status' being 'running'"
+	[ "$status" -eq 3 ]
 }
 
 
@@ -205,12 +238,12 @@ mytest() {
 
 
 @test "trying to find of a POD with the lower-case syntax (debug)" {
-	
+
 	debug_filename=$(basename -- $BATS_TEST_FILENAME)
 	path="/tmp/detik/$debug_filename.debug"
 	[ -f "$path" ] && mv "$path" "$path.backup"
 	[ ! -f "$path" ]
-	
+
 	# Enable the debug flag
 	DEBUG_DETIK="true"
 	run try "at most 5 times every 5s to find 2 pods named 'nginx' with 'status' being 'running'"
@@ -224,14 +257,14 @@ mytest() {
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
 	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
-	
+
 	# Verify the debug file
 	[ -f "$path" ]
-	
+
 	rm -rf "$path.cmp"
 	exec 7<> "$path.cmp"
 
-	echo "----DETIK-----" >&7
+	echo "-----DETIK:begin-----" >&7
 	echo "$BATS_TEST_FILENAME" >&7
 	echo "trying to find of a POD with the lower-case syntax (debug)" >&7
 	echo "" >&7
@@ -243,13 +276,68 @@ mytest() {
 	echo "nginx-deployment-75675f5897-gstkw  Running" >&7
 	echo "" >&7
 	echo "Expected count: 2" >&7
-	echo "----DETIK-----" >&7
+	echo "-----DETIK:end-----" >&7
+	echo "" >&7
 
 	exec 7>&-
 	run diff -q "$path" "$path.cmp"
 	[ "$status" -eq 0 ]
 	[ "$output" = "" ]
-	
+
+	[ -f "$path.backup" ] && mv "$path.backup" "$path"
+	rm -rf "$path.cmp"
+}
+
+
+@test "trying to find of a POD with the lower-case syntax (debug and a different K8s namespace)" {
+	DETIK_CLIENT_NAME="mytest_with_namespace"
+	DETIK_CLIENT_NAMESPACE="test_ns"
+
+	debug_filename=$(basename -- $BATS_TEST_FILENAME)
+	path="/tmp/detik/$debug_filename.debug"
+	[ -f "$path" ] && mv "$path" "$path.backup"
+	[ ! -f "$path" ]
+
+	# Enable the debug flag
+	DEBUG_DETIK="true"
+	run try "at most 5 times every 5s to find 2 pods named 'nginx' with 'status' being 'running'"
+
+	# Reset the debug flag
+	DEBUG_DETIK=""
+
+	# Verify basic assertions
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
+
+	# Verify the debug file
+	[ -f "$path" ]
+
+	rm -rf "$path.cmp"
+	exec 7<> "$path.cmp"
+
+	echo "-----DETIK:begin-----" >&7
+	echo "$BATS_TEST_FILENAME" >&7
+	echo "trying to find of a POD with the lower-case syntax (debug and a different K8s namespace)" >&7
+	echo "" >&7
+	echo "Client query:" >&7
+	echo "mytest_with_namespace --namespace=test_ns get pods -o custom-columns=NAME:.metadata.name,PROP:.status.phase" >&7
+	echo "" >&7
+	echo "Result:" >&7
+	echo "nginx-deployment-75675f5897-6dg9r  Running" >&7
+	echo "nginx-deployment-75675f5897-gstkw  Running" >&7
+	echo "" >&7
+	echo "Expected count: 2" >&7
+	echo "-----DETIK:end-----" >&7
+	echo "" >&7
+
+	exec 7>&-
+	run diff -q "$path" "$path.cmp"
+	[ "$status" -eq 0 ]
+	[ "$output" = "" ]
+
 	[ -f "$path.backup" ] && mv "$path.backup" "$path"
 	rm -rf "$path.cmp"
 }
@@ -261,11 +349,11 @@ my_consul_test() {
 	if [[ -f /tmp/my-consul-test.txt ]]; then
 		consul_cpt=$(cat /tmp/my-consul-test.txt)
 	fi
-	
+
 	if [[ "$consul_cpt" == "2" ]]; then
 		echo -e "NAME  PROP\nconsul-for-vault-0  Running\nconsul-for-vault-1  Running\nconsul-for-vault-2  Running"
 	fi
-	
+
 	consul_cpt=$(($consul_cpt + 1))
 	echo "$consul_cpt" > /tmp/my-consul-test.txt
 }
@@ -275,7 +363,7 @@ my_consul_test() {
 
 	DETIK_CLIENT_NAME="my_consul_test"
 	rm -rf /tmp/my-consul-test.txt
-	
+
 	run try "at most 5 times every 1s to find 3 pods named 'consul-for-vault' with 'status' being 'running'"
 	[ "$status" -eq 0 ]
 	[ ${#lines[@]} -eq 8 ]

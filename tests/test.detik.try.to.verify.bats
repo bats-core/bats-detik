@@ -180,7 +180,7 @@ mytest() {
 	rm -rf "$path.cmp"
 	exec 7<> "$path.cmp"
 
-	echo "----DETIK-----" >&7
+	echo "-----DETIK:begin-----" >&7
 	echo "$BATS_TEST_FILENAME" >&7
 	echo "trying to verify the status of a POD with the lower-case syntax (debug)" >&7
 	echo "" >&7
@@ -190,7 +190,8 @@ mytest() {
 	echo "Result:" >&7
 	echo "nginx-deployment-75675f5897-6dg9r  Running" >&7
 	echo "nginx-deployment-75675f5897-gstkw  Running" >&7
-	echo "----DETIK-----" >&7
+	echo "-----DETIK:end-----" >&7
+	echo "" >&7
 
 	exec 7>&-
 	run diff -q "$path" "$path.cmp"

@@ -10,13 +10,14 @@ source "$directory/utils.bash"
 #	1 Empty query
 #	2 Invalid syntax
 #	3 The assertion could not be verified after all the attempts
+#	  (may also indicate an error with the K8s client)
 #	0 Everything is fine
 try() {
 
 	# Concatenate all the arguments into a single string
 	IFS=' '
 	exp="$*"
-	
+
 	# Trim the expression
 	exp=$(trim "$exp")
 
@@ -28,7 +29,7 @@ try() {
 		echo "An empty expression was not expected."
 		return 1
 	fi
-	
+
 	# Let's verify the syntax
 	times=""
 	delay=""
@@ -37,9 +38,9 @@ try() {
 	property=""
 	expected_value=""
 	expected_count=""
-	
+
 	if [[ "$exp" =~ $try_regex_verify ]]; then
-		
+
 		# Extract parameters
 		times="${BASH_REMATCH[1]}"
 		delay="${BASH_REMATCH[2]}"
@@ -47,9 +48,9 @@ try() {
 		name="${BASH_REMATCH[4]}"
 		property="${BASH_REMATCH[5]}"
 		expected_value=$(to_lower_case "${BASH_REMATCH[6]}")
-	
+
 	elif [[ "$exp" =~ $try_regex_find ]]; then
-		
+
 		# Extract parameters
 		times="${BASH_REMATCH[1]}"
 		delay="${BASH_REMATCH[2]}"
@@ -59,13 +60,13 @@ try() {
 		property="${BASH_REMATCH[6]}"
 		expected_value=$(to_lower_case "${BASH_REMATCH[7]}")
 	fi
-	
+
 	# Do we have something?
 	if [[ "$times" != "" ]]; then
-	 
+
 		# Prevent line breaks from being removed in command results
 		IFS=""
-		
+
 		# Start the loop
 		echo "Valid expression. Verification in progress..."
 		code=0
@@ -74,7 +75,7 @@ try() {
 			# Verify the value
 			verify_value $property $expected_value $resource $name "$expected_count"
 			code=$?
-	
+
 			# Break the loop prematurely?
 			if [[ "$code" == "0" ]]; then
 				break
@@ -85,10 +86,10 @@ try() {
 				code=3
 			fi
 		done
-		
+
 		## Error code
 		return $code
-	fi	
+	fi
 
 	# Default behavior
 	echo "Invalid expression: it does not respect the expected syntax."
@@ -102,13 +103,14 @@ try() {
 #	1 Empty query
 #	2 Invalid syntax
 #	3 The elements count is incorrect
+#	  (may also indicate an error with the K8s client)
 #	0 Everything is fine
 verify() {
 
 	# Concatenate all the arguments into a single string
 	IFS=' '
 	exp="$*"
-	
+
 	# Trim the expression
 	exp=$(trim "$exp")
 
@@ -119,7 +121,7 @@ verify() {
 	if [[ "$exp" == "" ]]; then
 		echo "An empty expression was not expected."
 		return 1
-	
+
 	elif [[ "$exp" =~ $verify_regex_count_is ]] || [[ "$exp" =~ $verify_regex_count_are ]]; then
 		card="${BASH_REMATCH[1]}"
 		resource=$(to_lower_case "${BASH_REMATCH[2]}")
@@ -127,18 +129,21 @@ verify() {
 
 		echo "Valid expression. Verification in progress..."
 		query=$(build_k8s_request "")
-		result=$(eval $DETIK_CLIENT_NAME get $resource $query | grep $name | tail -n +1 | wc -l | tr -d '[:space:]')
+		client_with_options=$(build_k8s_client_with_options)
+		result=$(eval $client_with_options get $resource $query | grep $name | tail -n +1 | wc -l | tr -d '[:space:]')
 
-		detik_debug "----DETIK-----"
+		# Debug?
+		detik_debug "-----DETIK:begin-----"
 		detik_debug "$BATS_TEST_FILENAME"
 		detik_debug "$BATS_TEST_DESCRIPTION"
 		detik_debug ""
 		detik_debug "Client query:"
-		detik_debug "$DETIK_CLIENT_NAME get $resource $query"
+		detik_debug "$client_with_options get $resource $query"
 		detik_debug ""
 		detik_debug "Result:"
 		detik_debug "$result"
-		detik_debug "----DETIK-----"
+		detik_debug "-----DETIK:end-----"
+		detik_debug ""
 
 		if [[ "$result" == "$card" ]]; then
 			echo "Found $result $resource named $name (as expected)."
@@ -146,16 +151,16 @@ verify() {
 			echo "Found $result $resource named $name (instead of $card expected)."
 			return 3
 		fi
-	
+
 	elif [[ "$exp" =~ $verify_regex_property_is ]]; then
 		property="${BASH_REMATCH[1]}"
 		expected_value="${BASH_REMATCH[2]}"
 		resource=$(to_lower_case "${BASH_REMATCH[3]}")
 		name="${BASH_REMATCH[4]}"
-		
+
 		echo "Valid expression. Verification in progress..."
 		verify_value $property $expected_value $resource $name
-		
+
 		if [[ "$?" != "0" ]]; then
 			return 3
 		fi
@@ -173,7 +178,7 @@ verify() {
 # @param {string} The resouce type (e.g. pod).
 # @param {string} The resource name or regex.
 # @param {integer} a.k.a. "expected_count": the expected number of elements having this property (optional)
-# @return 
+# @return
 # 		If "expected_count" was NOT set: the number of elements with the wrong value.
 #		If "expected_count" was set: 101 if the elements count is not right, 0 otherwise.
 verify_value() {
@@ -187,15 +192,16 @@ verify_value() {
 
 	# List the items and remove the first line (the one that contains the column names)
 	query=$(build_k8s_request $property)
-	result=$(eval $DETIK_CLIENT_NAME get $resource $query | grep $name | tail -n +1)
+	client_with_options=$(build_k8s_client_with_options)
+	result=$(eval $client_with_options get $resource $query | grep $name | tail -n +1)
 
 	# Debug?
-	detik_debug "----DETIK-----"
+	detik_debug "-----DETIK:begin-----"
 	detik_debug "$BATS_TEST_FILENAME"
 	detik_debug "$BATS_TEST_DESCRIPTION"
 	detik_debug ""
 	detik_debug "Client query:"
-	detik_debug "$DETIK_CLIENT_NAME get $resource $query"
+	detik_debug "$client_with_options get $resource $query"
 	detik_debug ""
 	detik_debug "Result:"
 	detik_debug "$result"
@@ -203,20 +209,21 @@ verify_value() {
 		detik_debug ""
 		detik_debug "Expected count: $expected_count"
 	fi
-	detik_debug "----DETIK-----"
-	
+	detik_debug "-----DETIK:end-----"
+	detik_debug ""
+
 	# Is the result empty?
 	empty=0
 	if [[ "$result" == "" ]]; then
 		echo "No resource of type '$resource' was found with the name '$name'."
 	fi
-			
+
 	# Verify the result
 	IFS=$'\n'
 	invalid=0
 	valid=0
 	for line in $result; do
-				
+
 		# Keep the second column (property to verify)
 		# and put it in lower case
 		value=$(to_lower_case "$line" | awk '{ print $2 }')
@@ -229,7 +236,7 @@ verify_value() {
 			valid=$((valid + 1))
 		fi
 	done
-	
+
 	# Do we have the right number of elements?
 	if [[ "$expected_count" != "" ]]; then
 		if [[ "$valid" != "$expected_count" ]]; then
@@ -239,7 +246,7 @@ verify_value() {
 			invalid=0
 		fi
 	fi
-	
+
 	return $invalid
 }
 
@@ -259,7 +266,20 @@ build_k8s_request() {
 	elif [[ "$1" != "" ]]; then
 		req="$req,PROP:$1"
 	fi
-	
+
 	echo $req
 }
 
+
+# Builds the client command, with the option for the K8s namespace, if any.
+# @return 0
+build_k8s_client_with_options() {
+
+	client_with_options="$DETIK_CLIENT_NAME"
+	if [[ ! -z "$DETIK_CLIENT_NAMESPACE" ]]; then
+		# eval does not like '-n'
+		client_with_options="$DETIK_CLIENT_NAME --namespace=$DETIK_CLIENT_NAMESPACE"
+	fi
+
+	echo $client_with_options
+}
