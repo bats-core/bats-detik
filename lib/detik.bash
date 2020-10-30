@@ -216,6 +216,7 @@ verify_value() {
 	empty=0
 	if [[ "$result" == "" ]]; then
 		echo "No resource of type '$resource' was found with the name '$name'."
+		return 101
 	fi
 
 	# Verify the result
