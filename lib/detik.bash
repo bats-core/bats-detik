@@ -73,8 +73,7 @@ try() {
 		for ((i=1; i<=$times; i++)); do
 
 			# Verify the value
-			verify_value $property $expected_value $resource $name "$expected_count"
-			code=$?
+			verify_value $property $expected_value $resource $name "$expected_count" && code=$? || code=$?
 
 			# Break the loop prematurely?
 			if [[ "$code" == "0" ]]; then
