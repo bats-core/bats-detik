@@ -28,6 +28,15 @@ mytest() {
 	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
 }
 
+@test "trying to verify the containerStatus of a POD with a complex json property" {
+	run try "at most 5 times every 5s to get pods named 'nginx' and verify that '.status.containerStatuses[?(@.name==\"nginx\")].ready' is 'running'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
+}
+
 
 @test "trying to verify the status of a POD with upper-case letters" {
 	run try "at most 5 times eVery 5s to GET pods named 'nginx' and verify that 'status' is 'RUNNING'"

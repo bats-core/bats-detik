@@ -263,7 +263,7 @@ build_k8s_request() {
 	elif [[ "$1" == "targetPort" ]]; then
 		req="$req,PROP:.spec.ports[*].targetPort"
 	elif [[ "$1" != "" ]]; then
-		req="$req,PROP:$1"
+		req="$req,PROP:'$1'"
 	fi
 
 	echo $req
