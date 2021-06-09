@@ -42,4 +42,3 @@ RUN helm init --client-only --skip-refresh
 
 # Add the library
 COPY ./lib /home/testing/lib
-
