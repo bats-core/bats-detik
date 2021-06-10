@@ -39,5 +39,5 @@ load "../lib/detik"
 	run build_k8s_request ".spec.ports[*].targetPort"
 	[ "$status" -eq 0 ]
 	[ ${#lines[@]} -eq 1 ]
-	[ "${lines[0]}" = "-o custom-columns=NAME:.metadata.name,PROP:.spec.ports[*].targetPort" ]
+	[ "${lines[0]}" = "-o custom-columns=NAME:.metadata.name,PROP:'.spec.ports[*].targetPort'" ]
 }
