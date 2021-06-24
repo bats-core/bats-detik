@@ -202,17 +202,24 @@ Make sure they import the **lib/utils.bash** and **lib/detik.bash** files.
 
 ### Executing Tests by Hand
 
-Assuming you have built the image from the sample Dockerfile...
+To build the image from the sample Dockerfile:
+
+```bash
+# Tag it with LATEST
+docker build -t bats-detik:LATEST .
+```
+
+Then, you can use it this way:
 
 ```bash
 # Run the image with a volume for your project.
 # In this example, we show how to specify the proxy
 # if your organization is using one.
 docker run -ti \
-        -v $(pwd):/home/testing/sources \
-        -e http_proxy="proxy.local:3128" \
-        -e https_proxy="proxy.local:3128" \
-        bats-detik:LATEST
+	-v $(pwd):/home/testing/sources \
+	-e http_proxy="proxy.local:3128" \
+	-e https_proxy="proxy.local:3128" \
+	bats-detik:LATEST
 
 # Log into the cluster
 echo "It all depends on your cluster configuration"
@@ -251,7 +258,7 @@ See [https://kubernetes.io/docs/reference/kubectl/overview/#resource-types](http
 
 This simple assertion may fail sometimes.  
 As an example, if you count the number of PODs, run your test and then kill the POD, they will still
-be listed, with the TERMINATING state. So, moest of the time, you will want to verify the number of instances
+be listed, with the TERMINATING state. So, most of the time, you will want to verify the number of instances
 with a given property value. Example: count the number of PODs with a given name pattern and having the `started` status.
 Hence this additional syntax.
 
