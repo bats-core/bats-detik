@@ -43,7 +43,7 @@ lint() {
 		detik_debug "Read line $current_line_number: $line"
 
 		# Skip empty lines and comments
-		if [[ ! -n "$line" ]] || [[ "$line" =~ ^[[:space:]]*#.* ]]; then
+		if [[ -z "$line" ]] || [[ "$line" =~ ^[[:space:]]*#.* ]]; then
 			if [[ "$multi_line" == "0" ]]; then
 				handle_error "Incomplete multi-line statement at $current_line_number."
 				current_line=""

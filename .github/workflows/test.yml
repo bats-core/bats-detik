@@ -1,0 +1,27 @@
+name: Test
+on:
+- push
+- pull_request
+- workflow_dispatch
+
+jobs:
+  test-detik:
+    name: Test DETIK
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Install BATS
+      run: |
+        git clone https://github.com/bats-core/bats-core.git && \
+        cd bats-core && sudo ./install.sh /usr/local && \
+        cd ..
+    - uses: actions/checkout@v2
+    - name: Test with bats
+      run: bats tests/
+
+  test-docker-build:
+    name: Build the Docker image
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Execute the build script
+      run: docker build -t bats/bats-detik .

@@ -164,7 +164,7 @@ mytest() {
 
 @test "trying to verify the status of a POD with the lower-case syntax (debug)" {
 	
-	debug_filename=$(basename -- $BATS_TEST_FILENAME)
+	debug_filename=$(basename -- "$BATS_TEST_FILENAME")
 	path="/tmp/detik/$debug_filename.debug"
 	[[ -f "$path" ]] && mv "$path" "$path.backup"
 	[ ! -f "$path" ]

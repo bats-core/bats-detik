@@ -70,17 +70,17 @@ try() {
 		# Start the loop
 		echo "Valid expression. Verification in progress..."
 		code=0
-		for ((i=1; i<=$times; i++)); do
+		for ((i=1; i<=times; i++)); do
 
 			# Verify the value
-			verify_value $property $expected_value $resource $name "$expected_count" && code=$? || code=$?
+			verify_value "$property" "$expected_value" "$resource" "$name" "$expected_count" && code=$? || code=$?
 
 			# Break the loop prematurely?
 			if [[ "$code" == "0" ]]; then
 				break
 			elif [[ "$i" != "1" ]]; then
 				code=3
-				sleep $delay
+				sleep "$delay"
 			else
 				code=3
 			fi
@@ -158,7 +158,7 @@ verify() {
 		name="${BASH_REMATCH[4]}"
 
 		echo "Valid expression. Verification in progress..."
-		verify_value $property $expected_value $resource $name
+		verify_value "$property" "$expected_value" "$resource" "$name"
 
 		if [[ "$?" != "0" ]]; then
 			return 3
@@ -190,7 +190,7 @@ verify_value() {
 	expected_count="$5"
 
 	# List the items and remove the first line (the one that contains the column names)
-	query=$(build_k8s_request $property)
+	query=$(build_k8s_request "$property")
 	client_with_options=$(build_k8s_client_with_options)
 	result=$(eval $client_with_options get $resource $query | grep $name | tail -n +1)
 
@@ -266,7 +266,7 @@ build_k8s_request() {
 		req="$req,PROP:'$1'"
 	fi
 
-	echo $req
+	echo "$req"
 }
 
 
@@ -275,10 +275,10 @@ build_k8s_request() {
 build_k8s_client_with_options() {
 
 	client_with_options="$DETIK_CLIENT_NAME"
-	if [[ ! -z "$DETIK_CLIENT_NAMESPACE" ]]; then
+	if [[ -n "$DETIK_CLIENT_NAMESPACE" ]]; then
 		# eval does not like '-n'
 		client_with_options="$DETIK_CLIENT_NAME --namespace=$DETIK_CLIENT_NAMESPACE"
 	fi
 
-	echo $client_with_options
+	echo "$client_with_options"
 }

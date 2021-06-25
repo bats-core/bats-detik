@@ -184,32 +184,48 @@ It includes...
 
 ## Usage
 
-### Setup
+### Manual Setup
 
 * Install [BATS](https://github.com/bats-core/bats-core), a testing framework for scripts.  
 BATS is a test framework for BASH and other scripts.
-* Download the **lib/detik.bash** script.  
+* Download the **lib/detik.bash** script.
+
 ```bash
 wget https://raw.githubusercontent.com/bats-core/bats-detik/master/lib/detik.bash
 wget https://raw.githubusercontent.com/bats-core/bats-detik/master/lib/linter.bash
 wget https://raw.githubusercontent.com/bats-core/bats-detik/master/lib/utils.bash
 chmod +x *.bash
 ```
-* Write bats scripts with assertions.  
+
+* Write BATS scripts with assertions.  
 Make sure they import the **lib/utils.bash** and **lib/detik.bash** files.
 * Import the **lib/linter.bash** file to verify the linting of DETIK assertions.
+* Use the BATS command to run your tests: `bats sources/tests/main.bats`
 
 
-### Executing Tests by Hand
+### Docker Setup
 
-To build the image from the sample Dockerfile:
+This project does not provide any official Docker image.  
+This is because you may need various clients (kubectl, oc, kustomize...
+whatever) and it all depends on your requirements.
+
+A sample Dockerfile is provided in this project.  
+To build a Docker image from it:
 
 ```bash
 # Tag it with LATEST
-docker build -t bats-detik:LATEST .
+docker build -t bats/bats-detik:LATEST .
+
+# Overwrite the default versions
+docker build \
+	--build-arg KUBECTL_VERSION=v1.21.2 \
+	--build-arg HELM_VERSION=v3.6.1 \
+	--build-arg BATS_VERSION=1.3.0 \
+	-t bats/bats-detik:LATEST \
+	.    
 ```
 
-Then, you can use it this way:
+On a development machine, you can use it this way:
 
 ```bash
 # Run the image with a volume for your project.
@@ -225,18 +241,19 @@ docker run -ti \
 echo "It all depends on your cluster configuration"
 
 # Export the namespace for Helm (v2)
-export TILLER_NAMESPACE=<your namespace>
+# export TILLER_NAMESPACE=<your namespace>
 
 # Execute the tests
 bats sources/tests/main.bats
 ```
 
+It can also be used in a continuous integration platform.
+
 
 ### Continuous Integration
 
 An example is given for Jenkins in [the examples](examples/ci).  
-The syntax is quite simple and may be easily adapted for other solutions, such as GitLab CI,
-Tracis CI, etc.
+The syntax is quite simple and may be easily adapted for other solutions, such as GitLab CI, Tracis CI, etc.
 
 
 ## Syntax Reference

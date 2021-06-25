@@ -239,7 +239,7 @@ mytest_with_namespace() {
 
 @test "trying to find of a POD with the lower-case syntax (debug)" {
 
-	debug_filename=$(basename -- $BATS_TEST_FILENAME)
+	debug_filename=$(basename -- "$BATS_TEST_FILENAME")
 	path="/tmp/detik/$debug_filename.debug"
 	[ -f "$path" ] && mv "$path" "$path.backup"
 	[ ! -f "$path" ]
@@ -293,7 +293,7 @@ mytest_with_namespace() {
 	DETIK_CLIENT_NAME="mytest_with_namespace"
 	DETIK_CLIENT_NAMESPACE="test_ns"
 
-	debug_filename=$(basename -- $BATS_TEST_FILENAME)
+	debug_filename=$(basename -- "$BATS_TEST_FILENAME")
 	path="/tmp/detik/$debug_filename.debug"
 	[ -f "$path" ] && mv "$path" "$path.backup"
 	[ ! -f "$path" ]
@@ -354,7 +354,7 @@ my_consul_test() {
 		echo -e "NAME  PROP\nconsul-for-vault-0  Running\nconsul-for-vault-1  Running\nconsul-for-vault-2  Running"
 	fi
 
-	consul_cpt=$(($consul_cpt + 1))
+	consul_cpt=$((consul_cpt + 1))
 	echo "$consul_cpt" > /tmp/my-consul-test.txt
 }
 

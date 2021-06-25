@@ -2,7 +2,7 @@
 
 load "../lib/utils"
 
-debug_filename=$(basename -- $BATS_TEST_FILENAME)
+debug_filename=$(basename -- "$BATS_TEST_FILENAME")
 target="/tmp/detik/$debug_filename.debug"
 
 @test "testing debug" {

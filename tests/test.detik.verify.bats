@@ -170,7 +170,7 @@ mytest_with_namespace() {
 
 @test "verifying the number of PODs with the lower-case syntax (debug)" {
 
-	debug_filename=$(basename -- $BATS_TEST_FILENAME)
+	debug_filename=$(basename -- "$BATS_TEST_FILENAME")
 	path="/tmp/detik/$debug_filename.debug"
 	[ -f "$path" ] && mv "$path" "$path.backup"
 	[ ! -f "$path" ]
@@ -220,7 +220,7 @@ mytest_with_namespace() {
 	DETIK_CLIENT_NAME="mytest_with_namespace"
 	DETIK_CLIENT_NAMESPACE="test_ns"
 
-	debug_filename=$(basename -- $BATS_TEST_FILENAME)
+	debug_filename=$(basename -- "$BATS_TEST_FILENAME")
 	path="/tmp/detik/$debug_filename.debug"
 	[ -f "$path" ] && mv "$path" "$path.backup"
 	[ ! -f "$path" ]
@@ -376,7 +376,7 @@ mytest_with_namespace() {
 
 @test "verifying the status of a POD with the lower-case syntax (debug)" {
 
-	debug_filename=$(basename -- $BATS_TEST_FILENAME)
+	debug_filename=$(basename -- "$BATS_TEST_FILENAME")
 	path="/tmp/detik/$debug_filename.debug"
 	[ -f "$path" ] && mv "$path" "$path.backup"
 	[ ! -f "$path" ]
