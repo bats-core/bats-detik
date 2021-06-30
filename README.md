@@ -184,52 +184,76 @@ It includes...
 
 ## Usage
 
-### Setup
+### Manual Setup
 
 * Install [BATS](https://github.com/bats-core/bats-core), a testing framework for scripts.  
 BATS is a test framework for BASH and other scripts.
-* Download the **lib/detik.bash** script.  
+* Download the **lib/detik.bash** script.
+
 ```bash
 wget https://raw.githubusercontent.com/bats-core/bats-detik/master/lib/detik.bash
 wget https://raw.githubusercontent.com/bats-core/bats-detik/master/lib/linter.bash
 wget https://raw.githubusercontent.com/bats-core/bats-detik/master/lib/utils.bash
 chmod +x *.bash
 ```
-* Write bats scripts with assertions.  
+
+* Write BATS scripts with assertions.  
 Make sure they import the **lib/utils.bash** and **lib/detik.bash** files.
 * Import the **lib/linter.bash** file to verify the linting of DETIK assertions.
+* Use the BATS command to run your tests: `bats sources/tests/main.bats`
 
 
-### Executing Tests by Hand
+### Docker Setup
 
-Assuming you have built the image from the sample Dockerfile...
+This project does not provide any official Docker image.  
+This is because you may need various clients (kubectl, oc, kustomize...
+whatever) and it all depends on your requirements.
+
+A sample Dockerfile is provided in this project.  
+To build a Docker image from it:
+
+```bash
+# Tag it with LATEST
+docker build -t bats/bats-detik:LATEST .
+
+# Overwrite the default versions
+docker build \
+	--build-arg KUBECTL_VERSION=v1.21.2 \
+	--build-arg HELM_VERSION=v3.6.1 \
+	--build-arg BATS_VERSION=1.3.0 \
+	-t bats/bats-detik:LATEST \
+	.    
+```
+
+On a development machine, you can use it this way:
 
 ```bash
 # Run the image with a volume for your project.
 # In this example, we show how to specify the proxy
 # if your organization is using one.
 docker run -ti \
-        -v $(pwd):/home/testing/sources \
-        -e http_proxy="proxy.local:3128" \
-        -e https_proxy="proxy.local:3128" \
-        bats-detik:LATEST
+	-v $(pwd):/home/testing/sources \
+	-e http_proxy="proxy.local:3128" \
+	-e https_proxy="proxy.local:3128" \
+	bats-detik:LATEST
 
 # Log into the cluster
 echo "It all depends on your cluster configuration"
 
 # Export the namespace for Helm (v2)
-export TILLER_NAMESPACE=<your namespace>
+# export TILLER_NAMESPACE=<your namespace>
 
 # Execute the tests
 bats sources/tests/main.bats
 ```
 
+It can also be used in a continuous integration platform.
+
 
 ### Continuous Integration
 
 An example is given for Jenkins in [the examples](examples/ci).  
-The syntax is quite simple and may be easily adapted for other solutions, such as GitLab CI,
-Tracis CI, etc.
+The syntax is quite simple and may be easily adapted for other solutions, such as GitLab CI, Tracis CI, etc.
 
 
 ## Syntax Reference
@@ -251,7 +275,7 @@ See [https://kubernetes.io/docs/reference/kubectl/overview/#resource-types](http
 
 This simple assertion may fail sometimes.  
 As an example, if you count the number of PODs, run your test and then kill the POD, they will still
-be listed, with the TERMINATING state. So, moest of the time, you will want to verify the number of instances
+be listed, with the TERMINATING state. So, most of the time, you will want to verify the number of instances
 with a given property value. Example: count the number of PODs with a given name pattern and having the `started` status.
 Hence this additional syntax.
 
