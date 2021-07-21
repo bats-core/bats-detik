@@ -244,6 +244,9 @@ verify_value() {
 		else
 			invalid=0
 		fi
+	# If no count expected, raise an error when 0 found items
+	elif [[ "$valid" == "0" ]]; then
+		invalid=102
 	fi
 
 	return $invalid

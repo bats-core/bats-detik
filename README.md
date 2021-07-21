@@ -317,7 +317,7 @@ without having been verified, an error is thrown. Please, refer to [this section
 about the property names.
 
 This assertion verifies all the instances have this property value.
-But unlike the assertion type to count resources, you do not verify how many instances have this value.
+But unlike the assertion type to count resources, you do not verify how many instances have this value. Notice however that **if it finds 0 item verifying the property, the assertion fails**.
 
 
 ### Property Names
