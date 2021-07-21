@@ -324,7 +324,7 @@ mytest_with_namespace() {
 
 @test "verifying the status of a POD with an invalid name" {
 	run verify "'status' is 'running' for pods named 'nginx-something'"
-	[ "$status" -eq 0 ]
+	[ "$status" -eq 3 ]
 	[ ${#lines[@]} -eq 2 ]
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "No resource of type 'pods' was found with the name 'nginx-something'." ]
@@ -343,7 +343,7 @@ mytest_with_namespace() {
 
 @test "verifying the status of a POD with an invalid pattern name" {
 	run verify "'status' is 'running' for pods named 'ngin.+x'"
-	[ "$status" -eq 0 ]
+	[ "$status" -eq 3 ]
 	[ ${#lines[@]} -eq 2 ]
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "No resource of type 'pods' was found with the name 'ngin.+x'." ]

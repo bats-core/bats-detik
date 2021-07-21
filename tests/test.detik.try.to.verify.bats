@@ -110,7 +110,7 @@ mytest() {
 
 @test "trying to verify the status of a POD with an invalid name" {
 	run try "at most 1 times every 1s to get pods named 'nginx-something' and verify that 'status' is 'running'"
-	[ "$status" -eq 0 ]
+	[ "$status" -eq 3 ]
 	[ ${#lines[@]} -eq 2 ]
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "No resource of type 'pods' was found with the name 'nginx-something'." ]
@@ -129,7 +129,7 @@ mytest() {
 
 @test "trying to verify the status of a POD with an invalid pattern name" {
 	run try "at most 1 times every 1s to get pods named 'ngin.+x' and verify that 'status' is 'running'"
-	[ "$status" -eq 0 ]
+	[ "$status" -eq 3 ]
 	[ ${#lines[@]} -eq 2 ]
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "No resource of type 'pods' was found with the name 'ngin.+x'." ]
