@@ -280,12 +280,7 @@ with a given property value. Example: count the number of PODs with a given name
 Hence this additional syntax.
 
 ```bash
-# Expecting 0 or 1 instance
-try "at most <number> times every <number>s \
-	to find <0 or 1> <resource-type> named '<regular-expression>' \
-	with '<property-name>' being '<expected-value>'"
-
-# Expecting more than 1 instance
+# Expecting a given number of instances
 try "at most <number> times every <number>s \
 	to find <number> <resource-type> named '<regular-expression>' \
 	with '<property-name>' being '<expected-value>'"
@@ -293,7 +288,7 @@ try "at most <number> times every <number>s \
 
 This is a checking loop.  
 It breaks the loop if as soon as the assertion is verified. If it reaches the end of the loop
-with having been verified, an error is thrown. Please, refer to [this section](#property-names) for details
+without having been verified, an error is thrown. Please, refer to [this section](#property-names) for details
 about the property names.
 
 This assertion is useful for PODs, whose life cycle changes take time.  
@@ -318,7 +313,7 @@ try "at most <number> times every <number>s \
 
 This is a checking loop.  
 It breaks the loop if as soon as the assertion is verified. If it reaches the end of the loop
-with having been verified, an error is thrown. Please, refer to [this section](#property-names) for details
+without having been verified, an error is thrown. Please, refer to [this section](#property-names) for details
 about the property names.
 
 This assertion verifies all the instances have this property value.
