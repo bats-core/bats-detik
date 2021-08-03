@@ -1,6 +1,6 @@
 # DETIK: DevOps e2e Testing in Kubernetes
-[![License](https://img.shields.io/github/license/mashape/apistatus.svg)]()
-[![Build Status](https://travis-ci.org/bats-core/bats-detik.svg?branch=master)](https://travis-ci.org/bats-core/bats-detik)
+[![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/bats-core/bats-detik/blob/master/LICENSE)
+![Build status](https://github.com/bats-core/bats-detik/actions/workflows/test.yml/badge.svg)
 
 This repository provides utilities to **execute end-to-end tests** of applications in Kubernetes clusters. This includes performing actions on the cluster (with kubectl, oc - for OpenShift - or helm) and verifying assertions by using a natural language, or almost. This reduces the amount of advanced bash commands to master.
 
@@ -29,6 +29,7 @@ This kind of test is the ultimate set of verifications to run for a project, lon
   * [Debugging Tests](#debugging-tests)
   * [Linting](#linting)
   * [Tips](#tips)
+* [Beyond K8s assertions](#beyond-k8s-assertions)
 
 
 ## Objectives
@@ -47,9 +48,11 @@ This kind of test is the ultimate set of verifications to run for a project, lon
 
 ### Test files and result
 
-This section shows how to write unit tests using this library and BATS.
+This section shows how to write unit tests using this library and [BATS](https://github.com/bats-core/bats-core).
 
 ```bash
+#!/usr/bin/env bats
+
 load "lib/utils"
 load "lib/detik"
 
@@ -93,28 +96,13 @@ DETIK_CLIENT_NAME="kubectl"
 
 Running the command **bats my-tests.bats** would result in the following output...
 
-```
-bats my-tests.bats
-1..2
-✓ 1 verify the deployment
-✓ 2 verify the undeployment
-The command "bats my-tests.bats" exited with 0.
-```
+<img src="doc/success.gif" alt="Animation created with Terminalizer (successful tests)" />
 
 In case of error, it would show...
 
-```
-bats my-tests.bats
-1..2
-✗ 1 verify the deployment
-    (in test file my-tests.bats, line 14)
-     `[ "$status" -eq 0 ]' failed
- 
-✓ 2 verify the undeployment
-The command "bats my-tests.bats" exited with 1.
-```
+<img src="doc/failure.gif" alt="Animation created with Terminalizer (tests with failures)" />
 
-Since this project uses BATS, you can use **setup** and **teardown**
+Since this project works with BATS, you can use **setup** and **teardown**
 functions to prepare and clean after every test in a file.
 
 
@@ -357,7 +345,7 @@ There is a **debug** function in DETIK.
 You can use it in your own tests. Debug traces are stored into **/tmp/detik/**.
 There is one debug file per test file.
 
-It is recommended to reset this file at beginning of every test file.
+It is recommended to reset this file at the beginning of every test file.
 
 ```bash
 #!/usr/bin/env bats
@@ -440,3 +428,18 @@ load "lib/linter"
 
 1. **Do not use file descriptors 3 and 4 in your tests.**  
 They are already used by BATS. And 0, 1 and 2 are default file descriptors. Use 5, 6 and higher values.
+
+
+## Beyond K8s assertions
+
+End-to-end tests may involve much more than K8s assertions.  
+BATS and DETIK can be combined with other testing frameworks, such
+as performance tests (e.g. with [Gatling](https://gatling.io) and
+[JMeter](https://jmeter.apache.org)) or functional scenarios with user
+interactions (e.g. with [Selenium](https://www.selenium.dev),
+[Cypress](https://www.cypress.io) or [Robot Framework](https://robotframework.org/)).
+
+To do so, you would need to have these tools colocated (in a same
+VM, container or POD). Your BATS scenarios would then invoke the various
+tools and verify assertions with BATS. Sky is the limit then: it all
+depends on what you want to test.
