@@ -94,13 +94,30 @@ DETIK_CLIENT_NAME="kubectl"
 }
 ```
 
-Running the command **bats my-tests.bats** would result in the following output...
+Executing **bats my-tests.bats** would result in the [following output](doc/success.gif)...
 
-<img src="doc/success.gif" alt="Animation created with Terminalizer (successful tests)" />
+```ada
+bats my-tests.bats
+1..2
+✓ 1 verify the deployment
+✓ 2 verify the undeployment
 
-In case of error, it would show...
+The command "bats my-tests.bats" exited with 0.
+```
 
-<img src="doc/failure.gif" alt="Animation created with Terminalizer (tests with failures)" />
+In case of error, [it would show](doc/failure.gif)...
+
+```ada
+bats my-tests.bats
+1..2
+✗ 1 verify the deployment
+    (in test file my-tests.bats, line 14)
+     `[ "$status" -eq 0 ]' failed
+ 
+✓ 2 verify the undeployment
+
+The command "bats my-tests.bats" exited with 1.
+```
 
 Since this project works with BATS, you can use **setup** and **teardown**
 functions to prepare and clean after every test in a file.
