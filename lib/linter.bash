@@ -132,15 +132,24 @@ check_line() {
 		part=$(clean_regex_part "${BASH_REMATCH[2]}")
 		context="$context\nRegex part:  $part"
 
-		verify_against_pattern "$part" "$try_regex_verify"
-		p_verify="$?"
+		verify_against_pattern "$part" "$try_regex_verify_is"
+		p_verify_is="$?"
 
-		verify_against_pattern "$part" "$try_regex_find"
-		p_find="$?"
+		verify_against_pattern "$part" "$try_regex_verify_matches"
+		p_verify_matches="$?"
+
+		verify_against_pattern "$part" "$try_regex_find_being"
+		p_find_being="$?"
+
+		verify_against_pattern "$part" "$try_regex_find_matching"
+		p_find_matching="$?"
 
 		# detik_debug "p_verify=$p_verify, p_find=$p_find, part=$part"
-		if [[ "$p_verify" != "0" ]] && [[ "$p_find" != "0" ]]; then
-			handle_error "Invalid TRY statement at line $line_number." "$context"
+		if [[ "$p_verify_is" != "0" ]] && \
+		   [[ "$p_verify_matches" != "0" ]] && \
+		   [[ "$p_find_being" != "0" ]] && \
+		   [[ "$p_find_matching" != "0" ]]; then
+				handle_error "Invalid TRY statement at line $line_number." "$context"
 		fi
 
 	# We have "verify" or "run verify" followed by something
@@ -159,9 +168,15 @@ check_line() {
 		verify_against_pattern "$part" "$verify_regex_property_is"
 		p_prop="$?"
 
+		verify_against_pattern "$part" "$verify_regex_property_matches"
+		p_matches="$?"
+
 		# detik_debug "p_is=$p_is, p_are=$p_are, p_prop=$p_prop, part=$part"
-		if [[ "$p_is" != "0" ]] && [[ "$p_are" != "0" ]]  && [[ "$p_prop" != "0" ]] ; then
-			handle_error "Invalid VERIFY statement at line $line_number." "$context"
+		if [[ "$p_is" != "0" ]] && \
+		   [[ "$p_are" != "0" ]]  && \
+		   [[ "$p_prop" != "0" ]] && \
+		   [[ "$p_matches" != "0" ]] ; then
+				handle_error "Invalid VERIFY statement at line $line_number." "$context"
 		fi
 	fi
 }

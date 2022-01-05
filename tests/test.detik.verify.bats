@@ -2,9 +2,9 @@
 
 load "../lib/detik"
 
-
 DETIK_CLIENT_NAME="mytest"
 DETIK_CLIENT_NAMESPACE=""
+
 mytest() {
 	# The namespace should not appear (it is set in 1st position)
 	[[ "$1" != "--namespace=test_ns" ]] || return 1
@@ -404,6 +404,205 @@ mytest_with_namespace() {
 	echo "-----DETIK:begin-----" >&7
 	echo "$BATS_TEST_FILENAME" >&7
 	echo "verifying the status of a POD with the lower-case syntax (debug)" >&7
+	echo "" >&7
+	echo "Client query:" >&7
+	echo "mytest get pods -o custom-columns=NAME:.metadata.name,PROP:.status.phase" >&7
+	echo "" >&7
+	echo "Result:" >&7
+	echo "nginx-deployment-75675f5897-6dg9r  Running" >&7
+	echo "nginx-deployment-75675f5897-gstkw  Running" >&7
+	echo "-----DETIK:end-----" >&7
+	echo "" >&7
+
+	exec 7>&-
+	run diff -q "$path" "$path.cmp"
+	[ "$status" -eq 0 ]
+	[ "$output" = "" ]
+
+	rm -rf "$path.cmp"
+	[ -f "$path.backup" ] && mv "$path.backup" "$path"
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax and a simple match" {
+	run verify "'status' matches 'Running' for pods named 'nginx'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r matches the regular expression (found Running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw matches the regular expression (found Running)." ]
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax and a simple match with different case" {
+	run verify "'status' matches 'running' for pods named 'nginx'"
+	[ "$status" -eq 3 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Current value for nginx-deployment-75675f5897-6dg9r is Running..." ]
+	[ "${lines[2]}" = "Current value for nginx-deployment-75675f5897-gstkw is Running..." ]
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax and a simple match with case-insensitivy" {
+	DETIK_CASE_INSENSITIVE_PROPERTIES="true"
+	run verify "'status' matches 'running' for pods named 'nginx'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r matches the regular expression (found running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw matches the regular expression (found running)." ]
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax and a simple match with an upper-case pattern" {
+	run verify "'status' matches '[A-Z]+$' for pods named 'nginx'"
+	[ "$status" -eq 3 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Current value for nginx-deployment-75675f5897-6dg9r is Running..." ]
+	[ "${lines[2]}" = "Current value for nginx-deployment-75675f5897-gstkw is Running..." ]
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax and a simple match with a lower-case pattern" {
+	run verify "'status' matches '[a-z]+' for pods named 'nginx'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r matches the regular expression (found Running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw matches the regular expression (found Running)." ]
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax and an exact match" {
+	run verify "'status' matches '^Running$' for pods named 'nginx'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r matches the regular expression (found Running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw matches the regular expression (found Running)." ]
+}
+
+
+@test "verifying the status of a POD with a complex property and a partial match" {
+	run verify "'.status.phase' matches 'Run.*' for pods named 'nginx'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r matches the regular expression (found Running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw matches the regular expression (found Running)." ]
+}
+
+
+@test "verifying the syntax check (invalid wording, with a pattern match)" {
+	run verify "'status' matches 'running' for all the pods named 'nginx'"
+	[ "$status" -eq 2 ]
+	[ ${#lines[@]} -eq 1 ]
+	[ "${lines[0]}" = "Invalid expression: it does not respect the expected syntax." ]
+}
+
+
+@test "verifying the syntax check (missing quotes, with a pattern match)" {
+	run verify "status matches 'running' for pods named 'nginx'"
+	[ "$status" -eq 2 ]
+	[ ${#lines[@]} -eq 1 ]
+	[ "${lines[0]}" = "Invalid expression: it does not respect the expected syntax." ]
+}
+
+
+@test "verifying the status of a POD with the wrong value and a pattern match" {
+	run verify "'status' matches 'initializing' for pods named 'nginx'"
+	[ "$status" -eq 3 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Current value for nginx-deployment-75675f5897-6dg9r is Running..." ]
+	[ "${lines[2]}" = "Current value for nginx-deployment-75675f5897-gstkw is Running..." ]
+}
+
+
+@test "verifying the status of a POD with an invalid name and a pattern match" {
+	run verify "'status' matches 'Running' for pods named 'nginx-something'"
+	[ "$status" -eq 3 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "No resource of type 'pods' was found with the name 'nginx-something'." ]
+}
+
+
+@test "verifying the status of a POD with a pattern name and a pattern match" {
+	run verify "'status' matches 'R.nn.ng' for pods named 'ngin.*'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r matches the regular expression (found Running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw matches the regular expression (found Running)." ]
+}
+
+
+@test "verifying the status of a POD with an invalid pattern name and a pattern match" {
+	run verify "'status' matches 'Running' for pods named 'ngin.+x'"
+	[ "$status" -eq 3 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "No resource of type 'pods' was found with the name 'ngin.+x'." ]
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax (multi-lines and pattern matching)" {
+	run verify "  'status'   matches   'R.+g'   for " \
+			"  pods      named   'nginx'  "
+
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r matches the regular expression (found Running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw matches the regular expression (found Running)." ]
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax (multi-lines and pattern matching, without quotes)" {
+	run verify "'status'"   matches   "'R.+g'"   for \
+		pods      named   "'nginx'"
+
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r matches the regular expression (found Running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw matches the regular expression (found Running)." ]
+}
+
+
+@test "verifying the status of a POD with the lower-case syntax (debug matching)" {
+
+	debug_filename=$(basename -- "$BATS_TEST_FILENAME")
+	path="/tmp/detik/$debug_filename.debug"
+	[ -f "$path" ] && mv "$path" "$path.backup"
+	[ ! -f "$path" ]
+
+	# Enable the debug flag
+	DEBUG_DETIK="true"
+	run verify "'status' matches 'Running' for pods named 'nginx'"
+
+	# Reset the debug flag
+	DEBUG_DETIK=""
+
+	# Verify basic assertions
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r matches the regular expression (found Running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw matches the regular expression (found Running)." ]
+
+	# Verify the debug file
+	[ -f "$path" ]
+
+	rm -rf "$path.cmp"
+	exec 7<> "$path.cmp"
+
+	echo "-----DETIK:begin-----" >&7
+	echo "$BATS_TEST_FILENAME" >&7
+	echo "verifying the status of a POD with the lower-case syntax (debug matching)" >&7
 	echo "" >&7
 	echo "Client query:" >&7
 	echo "mytest get pods -o custom-columns=NAME:.metadata.name,PROP:.status.phase" >&7

@@ -56,6 +56,31 @@ verify "'.spec.ports[*].targetPort'" is "'8484'" for services named "'nginx'"
 
 
 #########################################
+# Verifying properties (patterns)
+#########################################
+
+# Basic example
+verify "'status' matches '^running$' for pods named 'nginx'"
+	verify "'status' matches '^running$' for pods named 'nginx'"
+
+# The same thing (it is case insensitive)
+verify "'status' matches '^RUN.+' for pods naMed 'nginx'"
+
+# Use short names for resources ('po' instead of 'pods')
+# See https://kubernetes.io/docs/reference/kubectl/overview/#resource-types
+verify "'status' matches '^r.*g' for po named 'nginx'"
+
+# Use a regular expression for the name
+verify "'status' matches 'r.nn.ng' for pods named 'nginx.*'"
+
+# You can also use column names
+# Use kubectl get <resource> -o custom-columns=ALL:* to find column names.
+verify "'.status.phase' matches 'running' for pods named 'nginx'"
+verify "'.spec.ports[*].targetPort' matches '8484' for services named 'nginx'"
+verify "'.spec.ports[*].targetPort'" matches "'[[:digit:]]+'" for services named "'nginx'"
+
+
+#########################################
 # Verifying properties (with retries)
 #########################################
 
@@ -76,6 +101,29 @@ try "at most 2 times every 30s to get po named '^ng.*nx' and verify that 'status
 # Use kubectl get <resource> -o custom-columns=ALL:* to find column names.
 try "at most 2 times every 30s to get po named 'nginx' and verify that '.status.phase' is 'running'"
 try "at most 2 times every 30s to get svc named 'nginx' and verify that '.spec.ports[*].targetPort' is '8484'"
+
+
+#########################################
+# Verifying properties (with retries and patterns)
+#########################################
+
+# Basic example
+try "at most 5 times every 5s to get pods named 'nginx' and verify that 'status' matches '^running$'"
+
+# The same thing (it is case insensitive)
+try "at most 5 times every 15s to GET pods named 'nginx' and verify that 'status' matches '^RUNNING'"
+
+# Use short names for resources ('po' instead of 'pods')
+# See https://kubernetes.io/docs/reference/kubectl/overview/#resource-types
+try "at most 5 times every 5s to get po named 'nginx' and verify that 'status' matches 'r.nn.ng'"
+
+# Use a regular expression for the name
+try "at most 2 times every 30s to get po named '^ng.*nx' and verify that 'status' matches 'run.+g'"
+
+# You can also use column names
+# Use kubectl get <resource> -o custom-columns=ALL:* to find column names.
+try "at most 2 times every 30s to get po named 'nginx' and verify that '.status.phase' matches 'running'"
+try "at most 2 times every 30s to get svc named 'nginx' and verify that '.spec.ports[*].targetPort' matches '[[:digit:]]+'"
 
 
 #########################################
@@ -102,6 +150,29 @@ try "at most 2 times every 30s to find 1 svc named 'nginx' with '.spec.ports[*].
 
 
 #########################################
+# Counting objects (with retries, patterns and properties)
+#########################################
+
+# Basic example
+try "at most 5 times every 5s to find 2 pods named 'nginx' with 'status' matching '^running$'"
+
+# The same thing (it is case insensitive)
+try "at most 5 times every 15s to FIND 2 pods named 'nginx' with 'status' matching 'RUN.+'"
+
+# Use short names for resources ('po' instead of 'pods')
+# See https://kubernetes.io/docs/reference/kubectl/overview/#resource-types
+try "at most 5 times every 5s to find 0 po named 'nginx' with 'status' matching 'r.nn.ng'"
+
+# Use a regular expression for the name
+try "at most 2 times every 30s to find 1 po named '^ng.*nx' with 'status' matching '^r.*g'"
+
+# You can also use column names
+# Use kubectl get <resource> -o custom-columns=ALL:* to find column names.
+try "at most 2 times every 30s to find 4 po named 'nginx' with '.status.phase' matching '^running$'"
+try "at most 2 times every 30s to find 1 svc named 'nginx' with '.spec.ports[*].targetPort' matching '[[:digit:]]+'"
+
+
+#########################################
 # Formatting
 #########################################
 
@@ -115,7 +186,15 @@ try "at most 2 times every 30s "\
 try at most 2 times every 30s \
     to get svc named "'nginx'" and \
     verify that "'.spec.ports[*].targetPort'" is "'8484'"
-    
+
+try at most 2 times every 30s \
+    to get svc named "'nginx'" and \
+    verify that "'.spec.ports[*].targetPort'" matches "'[[:digit:]]+'"
+
 try "at most 2 times every 30s "\
 	"to find 1 svc named 'nginx' "\
 	"with '.spec.ports[*].targetPort' being '8484'"
+
+try "at most 2 times every 30s "\
+	"to find 1 svc named 'nginx' "\
+	"with '.spec.ports[*].targetPort' matching '[[:digit:]]+'"

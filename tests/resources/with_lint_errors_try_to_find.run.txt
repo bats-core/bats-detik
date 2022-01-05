@@ -20,7 +20,7 @@ run try "at most 5 times every 5s to find 2 pods named 'nginx' with '.status.pha
 # Error: missing quote before nginx
 run try "at most 5 times eVery 5s to find 2 pods named nginx' with 'status' being 'RUNNING'"
 
-# Error: the "most" keyword being missing
+# Error: the "every" keyword being missing
 run try "at most 5 times VERY 5hours to find 2 pods named 'nginx' with 'status' being 'RUNNING'"
 
 # Error: missing time unit
@@ -45,3 +45,34 @@ run try "  at  most  5  times  every  5s  to  find  2  pods "
 run try at  most  11  times  every  5s  to  find 2  pods \
 	named  "'nginx'"  \
 	with  "'status'"  being  "'running'"
+
+# Property patterns
+# Error: missing double quote at the end
+run try "at most 5 times every 5s to find 2 pods named 'nginx' with 'status' matching '^running$'
+run try "at most 5 times every 5s to find 2 pods named 'nginx' with '.status.phase' matching '^running$'"
+
+# Error: missing quote before nginx
+run try "at most 5 times eVery 5s to find 2 pods named nginx' with 'status' matching 'RUN.+'"
+
+# Error: the "every" keyword matching missing
+run try "at most 5 times VERY 5hours to find 2 pods named 'nginx' with 'status' matching 'R.NN.NG'"
+
+# Error: missing time unit
+run try "at most 5 times every 5 to find 2 pods named 'nginx' with 'status' matching running"
+
+run try "at most 1 times every 1s to find 2 pods named 'nginx' with 'status' matching '^initializing'"
+run try "at most 2 times every 1s to find 2 pods named 'nginx' with 'status' matching '^initializing'"
+run try "at most 3 times every 1s to find 2 pods named 'nginx' with 'status' matching '^initializing'"
+
+run try "at most 1 times every 1s to find 2 pods named 'nginx-something' with 'status' matching '^running$'"
+run try "at most 1 times every 1s to find 2 pods named 'ngin.*' with 'status' matching '^running$'"
+run try "at most 1 times every 1s to find 2 pods named 'ngin.+x' with 'status' matching '^running$'"
+
+# Error: missing backslash at the end of the line
+run try "  at  most  5  times  every  5s  to  find  2  pods "
+	" named  'nginx' " \
+	" with  'status'  matching  '[[:alnum:]]+' "
+
+run try at  most  11  times  every  5s  to  find 2  pods \
+	named  "'nginx'"  \
+	with  "'status'"  matching  "'[[:alnum:]]+'"

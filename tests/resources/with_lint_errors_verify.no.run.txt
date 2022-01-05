@@ -64,3 +64,27 @@ verify "  'status'   is   'running'   for "
 
 verify "'status'"   is   "'running'"   for \
 	pods      named   "'nginx'"
+
+# Property patterns
+verify "'status' matches 'running' for pods named 'nginx'"
+verify "'.status.phase' matches 'running' for pods named 'nginx'"
+verify "'status' matches 'RUNNING' For pods named 'nginx'"
+
+# Error: missing double quote at the end
+verify "'status' matches 'running' for all the pods named 'nginx'
+
+# Error: missing single quote at the end
+verify "status matches 'running' for pods named nginx'"
+verify "'status' matches 'initializing' for pods named 'nginx'"
+verify "'status' matches 'running' for pods named 'nginx-something'"
+
+# Error: missing single quote in the middle
+verify "'status' matches 'running for pods named 'ngin.*'"
+verify "'status' matches 'running' for pods named 'ngin.+x'"
+
+# Error: missing backslash at the end
+verify "  'status'   matches   'running'   for "
+	"  pods      named   'nginx'  "
+
+verify "'status'"   matches   "'running'"   for \
+	pods      named   "'nginx'"
