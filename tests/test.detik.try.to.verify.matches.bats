@@ -30,7 +30,7 @@ mytest() {
 
 
 @test "trying to verify the status of a POD with the lower-case syntax and a simple match with case-insensitivy" {
-	DETIK_CASE_INSENSITIVE_PROPERTIES="true"
+	DETIK_REGEX_CASE_INSENSITIVE_PROPERTIES="true"
 	run try "at most 1 times every 1s to get pods named 'nginx' and verify that 'status' matches 'running'"
 	[ "$status" -eq 0 ]
 	[ ${#lines[@]} -eq 3 ]

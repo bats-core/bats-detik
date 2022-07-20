@@ -38,7 +38,7 @@ try() {
 	property=""
 	expected_value=""
 	expected_count=""
-	verify_equality="true"
+	verify_strict_equality="true"
 
 	if [[ "$exp" =~ $try_regex_verify_is ]]; then
 
@@ -59,7 +59,7 @@ try() {
 		name="${BASH_REMATCH[4]}"
 		property="${BASH_REMATCH[5]}"
 		expected_value="${BASH_REMATCH[6]}"
-		verify_equality="false"
+		verify_strict_equality="false"
 
 	elif [[ "$exp" =~ $try_regex_find_being ]]; then
 
@@ -82,7 +82,7 @@ try() {
 		name="${BASH_REMATCH[5]}"
 		property="${BASH_REMATCH[6]}"
 		expected_value="${BASH_REMATCH[7]}"
-		verify_equality="false"
+		verify_strict_equality="false"
 	fi
 
 	# Do we have something?
@@ -97,7 +97,7 @@ try() {
 		for ((i=1; i<=times; i++)); do
 
 			# Verify the value
-			verify_value "$verify_equality" "$property" "$expected_value" "$resource" "$name" "$expected_count" && code=$? || code=$?
+			verify_value "$verify_strict_equality" "$property" "$expected_value" "$resource" "$name" "$expected_count" && code=$? || code=$?
 
 			# Break the loop prematurely?
 			if [[ "$code" == "0" ]]; then
@@ -221,7 +221,7 @@ verify() {
 verify_value() {
 
 	# Make the parameters readable
-	verify_equality=$(to_lower_case "$1")
+	verify_strict_equality=$(to_lower_case "$1")
 	property="$2"
 	expected_value="$3"
 	resource="$4"
@@ -267,7 +267,7 @@ verify_value() {
 		element=$(echo "$line" | awk '{ print $1 }')
 
 		# Compare with an exact value (case insensitive)
-		if [[ "$verify_equality" == "true" ]]; then
+		if [[ "$verify_strict_equality" == "true" ]]; then
 			value=$(to_lower_case "$value")
 			expected_value=$(to_lower_case "$expected_value")
 			if [[ "$value" != "$expected_value" ]]; then
@@ -281,7 +281,7 @@ verify_value() {
 		# Verify a regex (we preserve the case)
 		else
 			# We do not want another syntax for case-insensitivity
-			if [ "$DETIK_CASE_INSENSITIVE_PROPERTIES" = "true" ]; then
+			if [ "$DETIK_REGEX_CASE_INSENSITIVE_PROPERTIES" = "true" ]; then
 				value=$(to_lower_case "$value")
 			fi
 
@@ -299,7 +299,7 @@ verify_value() {
 	# Do we have the right number of elements?
 	if [[ "$expected_count" != "" ]]; then
 		if [[ "$valid" != "$expected_count" ]]; then
-			if [[ "$verify_equality" == "true" ]]; then
+			if [[ "$verify_strict_equality" == "true" ]]; then
 				echo "Expected $expected_count $resource named $name to have this value ($expected_value). Found $valid."
 			else
 				echo "Expected $expected_count $resource named $name to match this pattern ($expected_value). Found $valid."

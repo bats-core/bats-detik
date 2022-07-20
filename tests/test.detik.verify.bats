@@ -445,7 +445,7 @@ mytest_with_namespace() {
 
 
 @test "verifying the status of a POD with the lower-case syntax and a simple match with case-insensitivy" {
-	DETIK_CASE_INSENSITIVE_PROPERTIES="true"
+	DETIK_REGEX_CASE_INSENSITIVE_PROPERTIES="true"
 	run verify "'status' matches 'running' for pods named 'nginx'"
 	[ "$status" -eq 0 ]
 	[ ${#lines[@]} -eq 3 ]

@@ -45,7 +45,7 @@ mytest_with_namespace() {
 
 
 @test "trying to find 1 POD with the lower-case syntax and a simple match with case-insensitivy" {
-	DETIK_CASE_INSENSITIVE_PROPERTIES="true"
+	DETIK_REGEX_CASE_INSENSITIVE_PROPERTIES="true"
 	run try "at most 1 times every 5s to find 1 pod named 'nginx' with 'status' matching 'running'"
 	[ "$status" -eq 3 ]
 	[ ${#lines[@]} -eq 4 ]
