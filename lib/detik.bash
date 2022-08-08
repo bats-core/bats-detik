@@ -38,8 +38,9 @@ try() {
 	property=""
 	expected_value=""
 	expected_count=""
+	verify_strict_equality="true"
 
-	if [[ "$exp" =~ $try_regex_verify ]]; then
+	if [[ "$exp" =~ $try_regex_verify_is ]]; then
 
 		# Extract parameters
 		times="${BASH_REMATCH[1]}"
@@ -47,9 +48,20 @@ try() {
 		resource=$(to_lower_case "${BASH_REMATCH[3]}")
 		name="${BASH_REMATCH[4]}"
 		property="${BASH_REMATCH[5]}"
-		expected_value=$(to_lower_case "${BASH_REMATCH[6]}")
+		expected_value="${BASH_REMATCH[6]}"
 
-	elif [[ "$exp" =~ $try_regex_find ]]; then
+	elif [[ "$exp" =~ $try_regex_verify_matches ]]; then
+
+		# Extract parameters
+		times="${BASH_REMATCH[1]}"
+		delay="${BASH_REMATCH[2]}"
+		resource=$(to_lower_case "${BASH_REMATCH[3]}")
+		name="${BASH_REMATCH[4]}"
+		property="${BASH_REMATCH[5]}"
+		expected_value="${BASH_REMATCH[6]}"
+		verify_strict_equality="false"
+
+	elif [[ "$exp" =~ $try_regex_find_being ]]; then
 
 		# Extract parameters
 		times="${BASH_REMATCH[1]}"
@@ -58,7 +70,19 @@ try() {
 		resource=$(to_lower_case "${BASH_REMATCH[4]}")
 		name="${BASH_REMATCH[5]}"
 		property="${BASH_REMATCH[6]}"
-		expected_value=$(to_lower_case "${BASH_REMATCH[7]}")
+		expected_value="${BASH_REMATCH[7]}"
+
+	elif [[ "$exp" =~ $try_regex_find_matching ]]; then
+
+		# Extract parameters
+		times="${BASH_REMATCH[1]}"
+		delay="${BASH_REMATCH[2]}"
+		expected_count="${BASH_REMATCH[3]}"
+		resource=$(to_lower_case "${BASH_REMATCH[4]}")
+		name="${BASH_REMATCH[5]}"
+		property="${BASH_REMATCH[6]}"
+		expected_value="${BASH_REMATCH[7]}"
+		verify_strict_equality="false"
 	fi
 
 	# Do we have something?
@@ -73,7 +97,7 @@ try() {
 		for ((i=1; i<=times; i++)); do
 
 			# Verify the value
-			verify_value "$property" "$expected_value" "$resource" "$name" "$expected_count" && code=$? || code=$?
+			verify_value "$verify_strict_equality" "$property" "$expected_value" "$resource" "$name" "$expected_count" && code=$? || code=$?
 
 			# Break the loop prematurely?
 			if [[ "$code" == "0" ]]; then
@@ -158,7 +182,20 @@ verify() {
 		name="${BASH_REMATCH[4]}"
 
 		echo "Valid expression. Verification in progress..."
-		verify_value "$property" "$expected_value" "$resource" "$name"
+		verify_value true "$property" "$expected_value" "$resource" "$name"
+
+		if [[ "$?" != "0" ]]; then
+			return 3
+		fi
+
+	elif [[ "$exp" =~ $verify_regex_property_matches ]]; then
+		property="${BASH_REMATCH[1]}"
+		expected_value="${BASH_REMATCH[2]}"
+		resource=$(to_lower_case "${BASH_REMATCH[3]}")
+		name="${BASH_REMATCH[4]}"
+
+		echo "Valid expression. Verification in progress..."
+		verify_value false "$property" "$expected_value" "$resource" "$name"
 
 		if [[ "$?" != "0" ]]; then
 			return 3
@@ -172,6 +209,7 @@ verify() {
 
 
 # Verifies the value of a column for a set of elements.
+# @param {boolean} true to verify equality, false to match a regex
 # @param {string} A K8s column or one of the supported aliases.
 # @param {string} The expected value.
 # @param {string} The resouce type (e.g. pod).
@@ -183,11 +221,12 @@ verify() {
 verify_value() {
 
 	# Make the parameters readable
-	property="$1"
-	expected_value=$(to_lower_case "$2")
-	resource="$3"
-	name="$4"
-	expected_count="$5"
+	verify_strict_equality=$(to_lower_case "$1")
+	property="$2"
+	expected_value="$3"
+	resource="$4"
+	name="$5"
+	expected_count="$6"
 
 	# List the items and remove the first line (the one that contains the column names)
 	query=$(build_k8s_request "$property")
@@ -224,22 +263,47 @@ verify_value() {
 	for line in $result; do
 
 		# Keep the second column (property to verify)
-		# and put it in lower case
-		value=$(to_lower_case "$line" | awk '{ print $2 }')
+		value=$(echo "$line" | awk '{ print $2 }')
 		element=$(echo "$line" | awk '{ print $1 }')
-		if [[ "$value" != "$expected_value" ]]; then
-			echo "Current value for $element is $value..."
-			invalid=$((invalid + 1))
+
+		# Compare with an exact value (case insensitive)
+		if [[ "$verify_strict_equality" == "true" ]]; then
+			value=$(to_lower_case "$value")
+			expected_value=$(to_lower_case "$expected_value")
+			if [[ "$value" != "$expected_value" ]]; then
+				echo "Current value for $element is $value..."
+				invalid=$((invalid + 1))
+			else
+				echo "$element has the right value ($value)."
+				valid=$((valid + 1))
+			fi
+
+		# Verify a regex (we preserve the case)
 		else
-			echo "$element has the right value ($value)."
-			valid=$((valid + 1))
+			# We do not want another syntax for case-insensitivity
+			if [ "$DETIK_REGEX_CASE_INSENSITIVE_PROPERTIES" = "true" ]; then
+				value=$(to_lower_case "$value")
+			fi
+
+			reg=$(echo "$value" | grep -E "$expected_value")
+			if [[ "$?" -ne 0 ]]; then
+				echo "Current value for $element is $value..."
+				invalid=$((invalid + 1))
+			else
+				echo "$element matches the regular expression (found $reg)."
+				valid=$((valid + 1))
+			fi
 		fi
 	done
 
 	# Do we have the right number of elements?
 	if [[ "$expected_count" != "" ]]; then
 		if [[ "$valid" != "$expected_count" ]]; then
-			echo "Expected $expected_count $resource named $name to have this value ($expected_value). Found $valid."
+			if [[ "$verify_strict_equality" == "true" ]]; then
+				echo "Expected $expected_count $resource named $name to have this value ($expected_value). Found $valid."
+			else
+				echo "Expected $expected_count $resource named $name to match this pattern ($expected_value). Found $valid."
+			fi
 			invalid=101
 		else
 			invalid=0
@@ -279,7 +343,7 @@ build_k8s_client_with_options() {
 
 	client_with_options="$DETIK_CLIENT_NAME"
 	if [[ -n "$DETIK_CLIENT_NAMESPACE" ]]; then
-		# eval does not like '-n'
+		# eval does not "like" the '-n' syntax
 		client_with_options="$DETIK_CLIENT_NAME --namespace=$DETIK_CLIENT_NAMESPACE"
 	fi
 

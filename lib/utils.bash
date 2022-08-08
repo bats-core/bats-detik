@@ -2,14 +2,16 @@
 
 
 # The regex for the "try" key word
-try_regex_verify="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +([a-z]+) +named +'([^']+)' +and +verify +that +'([^']+)' +is +'([^']+)'$"
-try_regex_find="^at +most +([0-9]+) +times +every +([0-9]+)s +to +find +([0-9]+) +([a-z]+) +named +'([^']+)' +with +'([^']+)' +being +'([^']+)'$"
+try_regex_verify_is="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +([a-z]+) +named +'([^']+)' +and +verify +that +'([^']+)' +is +'([^']+)'$"
+try_regex_verify_matches="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +([a-z]+) +named +'([^']+)' +and +verify +that +'([^']+)' +matches +'([^']+)'$"
+try_regex_find_being="^at +most +([0-9]+) +times +every +([0-9]+)s +to +find +([0-9]+) +([a-z]+) +named +'([^']+)' +with +'([^']+)' +being +'([^']+)'$"
+try_regex_find_matching="^at +most +([0-9]+) +times +every +([0-9]+)s +to +find +([0-9]+) +([a-z]+) +named +'([^']+)' +with +'([^']+)' +matching +'([^']+)'$"
 
 # The regex for the "verify" key word
 verify_regex_count_is="^there +is +(0|1) +([a-z]+) +named +'([^']+)'$"
 verify_regex_count_are="^there +are +([0-9]+) +([a-z]+) +named +'([^']+)'$"
 verify_regex_property_is="^'([^']+)' +is +'([^']+)' +for +([a-z]+) +named +'([^']+)'$"
-
+verify_regex_property_matches="^'([^']+)' +matches +'([^']+)' +for +([a-z]+) +named +'([^']+)'$"
 
 
 # Prints a string in lower case.
@@ -72,4 +74,13 @@ reset_detik_debug() {
 	if [[ "$DEBUG_DETIK" == "true" ]]; then
 		reset_debug
 	fi
+}
+
+
+# Dumps the argument and return the previous error code.
+# @return the previous error code
+ddump() {
+	res="$?"
+	echo "$1"
+	return $res
 }

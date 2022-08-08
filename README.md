@@ -27,6 +27,7 @@ This kind of test is the ultimate set of verifications to run for a project, lon
 - [Syntax Reference](#syntax-reference)
   - [Counting Resources](#counting-resources)
   - [Verifying Property Values](#verifying-property-values)
+  - [Using Regular Expressions](#using-regular-expressions)
   - [Property Names](#property-names)
 - [Errors](#errors)
   - [Error Codes](#error-codes)
@@ -167,6 +168,11 @@ try "at most 5 times every 30s " \
 try at most 5 times every 30s \
     to get svc named "'nginx'" \
     and verify that "'.spec.ports[*].targetPort'" is "'8484'"
+
+# Regular expressions can also be used
+try at most 5 times every 30s \
+	to get svc named 'nginx' \
+	and verify that '.spec.ports[*].targetPort' matches '[[:digit:]]+'
 ```
 
 If you work with OpenShift and would prefer to use **oc** instead of **kubectl**...
@@ -304,9 +310,7 @@ try "at most <number> times every <number>s \
 For services, you may directly use the simple count assertions.
 
 This is a checking loop.
-It breaks the loop if as soon as the assertion is verified. If it reaches the end of the loop
-without having been verified, an error is thrown. Please, refer to [this section](#property-names) for details
-about the property names.
+It breaks the loop if as soon as the assertion is verified. If it reaches the end of the loop without having been verified, an error is thrown. Please, refer to [this section](#property-names) for details about the property names.
 
 
 ### Verifying Property Values
@@ -332,6 +336,65 @@ about the property names.
 
 :memo: This assertion verifies _all the instances_ have this property value.
 But unlike the assertion type to [count resources](#counting-resources), you do not verify _how many instances_ have this value. Notice however that **if it finds 0 item verifying the property, the assertion fails**.
+
+
+### Using Regular Expressions
+
+It is also possible to verify property values against a regular expression.  
+This can be used, as an example, to verify values in a JSON array.
+
+```bash
+# Verifying a property
+verify "'<property-name>' matches '<regular-experession>' for <resource-type> named '<regular-expression>'"
+
+# Finding elements with a matching property
+try "at most <number> times every <number>s \
+	to get <resource-type> named '<regular-expression>' \
+	and verify that '<property-name>' matches '<regular-experession>'"
+
+# Counting elements with a matching property
+try "at most <number> times every <number>s \
+	to find <number> <resource-type> named '<regular-expression>' \
+	with '<property-name>' matching '<regular-expression>'"
+```
+
+The regular expression used for property values relies on
+[BASH regexp](https://en.wikibooks.org/wiki/Regular_Expressions/POSIX-Extended_Regular_Expressions).
+More exactly, it uses extended regular expressions (EREs). You can simulate the result of such an assertion
+with `grep`, as it is the command used internally. Hence, you can use `echo your-value | grep -E your-regex`
+to prepare your assertions.
+
+> Unlike the assertions with the verb « to be », those with the verb « to match » are case-sensitive.
+
+All the assertions using the verb « to be » make case-insensitive comparison.  
+It means writing `is 'running'` or `is 'Running'` does not change anything.
+If you want case-sensitive equality, then use a regular expression, i.e. write
+`matches '^Running$'`.
+
+If for some reasons, one needs case-insensitive matches, you can set the DETIK_CASE_INSENSITIVE_PROPERTIES
+property to `true` in your test. All the retrieved values by the DETIK_CLIENT will be lower-cased. It means
+you can write a pattern that only considers lower-case characters. The following sample illustrates this situation:
+
+```bash
+# Assuming the status of the POD is "Running"...
+# ... then the following assertion will fail.
+verify "'status' matches 'running' for pods named 'nginx'"
+
+# Same for...
+verify "'status' matches '^running$' for pods named 'nginx'"
+
+# This is because the value returned by the client starts with an upper-case letter.
+# For case-insensivity operations with a regular expression, just use...
+DETIK_CASE_INSENSITIVE_PROPERTIES="true"
+verify "'status' matches 'running' for pods named 'nginx'"
+
+# The assertion will now be verified.
+# Just make sure the pattern ONLY INCLUDES lower-case characters.
+
+# If you set DETIK_CASE_INSENSITIVE_PROPERTIES directly in a "@test" function,
+# there is no need to reset it for the other tests. Its scope is limited to the
+# function that defines it. It is recommended to NOT make this variable a global one.
+```
 
 
 ### Property Names
@@ -428,9 +491,9 @@ DEBUG_DETIK=""
 
 ### Linting
 
-Because Bash is not a compiled language, it is easy to make mistakes.  
-Even if the library was designed to be simple. This is why a linter was created, to help to
-locate syntax errors when writing DETIK assertions. You can use it with BATS in your tests.
+Despite the efforts to make the DETIK syntax as simple as possible, BASH remains a non-compiled
+language and mistakes happen. To prevent them, a linter was created to help locating
+syntax errors when writing DETIK assertions. You can use it with BATS in your tests.
 
 ```bash
 #!/usr/bin/env bats

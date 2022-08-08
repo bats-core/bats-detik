@@ -163,12 +163,12 @@ mytest() {
 
 
 @test "trying to verify the status of a POD with the lower-case syntax (debug)" {
-	
+
 	debug_filename=$(basename -- "$BATS_TEST_FILENAME")
 	path="/tmp/detik/$debug_filename.debug"
 	[[ -f "$path" ]] && mv "$path" "$path.backup"
 	[ ! -f "$path" ]
-	
+
 	# Enable the debug flag
 	DEBUG_DETIK="true"
 	run try "at most 5 times every 5s to get pods named 'nginx' and verify that 'status' is 'running'"
@@ -182,10 +182,10 @@ mytest() {
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
 	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
-	
+
 	# Verify the debug file
 	[ -f "$path" ]
-	
+
 	rm -rf "$path.cmp"
 	exec 7<> "$path.cmp"
 
@@ -206,7 +206,7 @@ mytest() {
 	run diff -q "$path" "$path.cmp"
 	[ "$status" -eq 0 ]
 	[ "$output" = "" ]
-	
+
 	[[ -f "$path.backup" ]] && mv "$path.backup" "$path"
 	rm -rf "$path.cmp"
 }
