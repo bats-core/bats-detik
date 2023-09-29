@@ -15,7 +15,7 @@ setup() {
 }
 
 verify_helm() {
- 	helm template ../drupal | kubectl apply --dry-run -f -
+	helm template ../drupal | kubectl apply --dry-run -f -
 }
 
 
@@ -29,7 +29,7 @@ verify_helm() {
 @test "verify the deployment of the chart in dry-run mode" {
 
 	run verify_helm
-	[ "$status" -eq 0 ]	
+	[ "$status" -eq 0 ]
 }
 
 
@@ -59,28 +59,28 @@ verify_helm() {
 	run verify "there is 1 pod named 'my-test-drupal'"
 	[ "$status" -eq 0 ]
 
-        run verify "there is 1 pod named 'my-test-varnish'"
-        [ "$status" -eq 0 ]
+	run verify "there is 1 pod named 'my-test-varnish'"
+	[ "$status" -eq 0 ]
 
 	# Postgres specifics
 	run verify "there is 1 service named 'my-test-postgres'"
-        [ "$status" -eq 0 ]
+	[ "$status" -eq 0 ]
 
 	run verify "there is 1 ep named 'my-test-postgres'"
-        [ "$status" -eq 0 ]
+	[ "$status" -eq 0 ]
 
 	run verify "'.subsets[*].ports[*].port' is '44320' for endpoints named 'my-test-postgres'"
-        [ "$status" -eq 0 ]
+	[ "$status" -eq 0 ]
 
 	run verify "'.subsets[*].addresses[*].ip' is '10.234.121.117' for endpoints named 'my-test-postgres'"
-        [ "$status" -eq 0 ]
+	[ "$status" -eq 0 ]
 
 	# Services
 	run verify "there is 1 service named 'my-test-drupal'"
 	[ "$status" -eq 0 ]
 
 	run verify "there is 1 service named 'my-test-varnish'"
-        [ "$status" -eq 0 ]
+	[ "$status" -eq 0 ]
 
 	run verify "'port' is '80' for services named 'my-test-drupal'"
 	[ "$status" -eq 0 ]
@@ -93,24 +93,24 @@ verify_helm() {
 	[ "$status" -eq 0 ]
 
 	run verify "there is 1 deployment named 'my-test-varnish'"
-        [ "$status" -eq 0 ]
+	[ "$status" -eq 0 ]
 
 	# Ingress
 	run verify "there is 1 ingress named 'my-test-varnish'"
-        [ "$status" -eq 0 ]
+	[ "$status" -eq 0 ]
 
 	run verify "'.spec.rules[*].host' is 'varnish.test.local' for ingress named 'my-test-varnish'"
-        [ "$status" -eq 0 ]
+	[ "$status" -eq 0 ]
 
 	run verify "'.spec.rules[*].http.paths[*].backend.serviceName' is 'my-test-varnish' for ingress named 'my-test-varnish'"
- 	[ "$status" -eq 0 ]
+	[ "$status" -eq 0 ]
 
 	# PODs should be started
 	run try "at most 5 times every 30s to get pods named 'my-test-drupal' and verify that 'status' is 'running'"
 	[ "$status" -eq 0 ]
 
-        run try "at most 5 times every 30s to get pods named 'my-test-varnish' and verify that 'status' is 'running'"
-        [ "$status" -eq 0 ]
+	run try "at most 5 times every 30s to get pods named 'my-test-varnish' and verify that 'status' is 'running'"
+	[ "$status" -eq 0 ]
 
 	# Indicate to other tests the deployment succeeded
 	echo "started" > tests.status.tmp
@@ -140,15 +140,15 @@ verify_helm() {
 	[ "$status" -eq 0 ]
 	[ "$output" == "release \"my-test\" deleted" ]
 
-        run verify "there is 0 service named 'my-test'"
-        [ "$status" -eq 0 ]
+	run verify "there is 0 service named 'my-test'"
+	[ "$status" -eq 0 ]
 
-        run verify "there is 0 deployment named 'my-test'"
-        [ "$status" -eq 0 ]
+	run verify "there is 0 deployment named 'my-test'"
+	[ "$status" -eq 0 ]
 
 	sleep 60
-        run verify "there is 0 pod named 'my-test'"
-        [ "$status" -eq 0 ]
+	run verify "there is 0 pod named 'my-test'"
+	[ "$status" -eq 0 ]
 }
 
 

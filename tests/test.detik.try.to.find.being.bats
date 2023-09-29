@@ -22,7 +22,7 @@ mytest_with_namespace() {
 }
 
 mytest_with_spaces() {
-  # The namespace should not appear (it is set in 1st position)
+	# The namespace should not appear (it is set in 1st position)
 	[[ "$1" != "--namespace=test_ns" ]] || return 1
 
 	# Return the result
@@ -52,12 +52,12 @@ mytest_with_spaces() {
 
 
 @test "trying to find 1 certificate as a single-line value with spaces" {
-  DETIK_CLIENT_NAME="mytest_with_spaces"
+	DETIK_CLIENT_NAME="mytest_with_spaces"
 	run try "at most 1 times every 1s to find 1 certificate named 'cert' with 'value' being '----BEGIN CERTIFICATE----'"
-  [ "$status" -eq 0 ]
+	[ "$status" -eq 0 ]
 	[ ${#lines[@]} -eq 3 ]
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
-  [ "${lines[1]}" = "Current value for cert1 is ----oops----..." ]
+	[ "${lines[1]}" = "Current value for cert1 is ----oops----..." ]
 	[ "${lines[2]}" = "cert2 has the right value (----begin certificate----)." ]
 }
 

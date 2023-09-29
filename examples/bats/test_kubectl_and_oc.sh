@@ -81,12 +81,12 @@ try "at most 2 times every 30s to get svc named 'nginx' and verify that '.spec.p
 
 # Splitting a request over several lines
 try "at most 2 times every 30s "\
-    "to get svc named 'nginx' and "\
-    "verify that '.spec.ports[*].targetPort' is '8484'"
+	"to get svc named 'nginx' and "\
+	"verify that '.spec.ports[*].targetPort' is '8484'"
 
 # Using quotes differently
 # (make sure to surround single quotes by double ones)
 try at most 2 times every 30s \
-    to get svc named "'nginx'" and \
-    verify that "'.spec.ports[*].targetPort'" is "'8484'"
+	to get svc named "'nginx'" and \
+	verify that "'.spec.ports[*].targetPort'" is "'8484'"
 

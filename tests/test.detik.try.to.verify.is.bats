@@ -53,7 +53,7 @@ mytest_with_spaces() {
 
 
 @test "trying to verify the content of a single-line value with spaces" {
-  DETIK_CLIENT_NAME="mytest_with_spaces"
+	DETIK_CLIENT_NAME="mytest_with_spaces"
 	run try "at most 1 times every 1s to get something named 'cert1' and verify that 'value' is '----BEGIN CERTIFICATE----'"
 	[ "$status" -eq 0 ]
 	[ ${#lines[@]} -eq 2 ]

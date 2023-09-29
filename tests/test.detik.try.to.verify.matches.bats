@@ -104,7 +104,7 @@ mytest_with_spaces() {
 
 
 @test "trying to verify the content of a single-line value with spaces (success)" {
-  DETIK_CLIENT_NAME="mytest_with_spaces"
+	DETIK_CLIENT_NAME="mytest_with_spaces"
 	run try "at most 1 times every 1s to get something named 'cert1' and verify that 'value' matches '----BEGIN CERT.*'"
 	[ "$status" -eq 0 ]
 	[ ${#lines[@]} -eq 2 ]
@@ -114,7 +114,7 @@ mytest_with_spaces() {
 
 
 @test "trying to verify the content of a single-line value with spaces (failure)" {
-  DETIK_CLIENT_NAME="mytest_with_spaces"
+	DETIK_CLIENT_NAME="mytest_with_spaces"
 	run try "at most 1 times every 1s to get something named 'cert1' and verify that 'value' matches 'BEGIN CATE'"
 	[ "$status" -eq 3 ]
 	[ ${#lines[@]} -eq 2 ]

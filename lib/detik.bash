@@ -263,7 +263,7 @@ verify_value() {
 	for line in $result; do
 
 		# Keep the second column (property to verify)
-    # This column may contain spaces.
+		# This column may contain spaces.
 		value=$(cut -d ' ' -f 2- <<< "$line" | xargs)
 		element=$(cut -d ' ' -f 1 <<< "$line" | xargs)
 
