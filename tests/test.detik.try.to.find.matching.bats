@@ -21,6 +21,14 @@ mytest_with_namespace() {
 	echo -e "NAME  PROP\nnginx-deployment-75675f5897-6dg9r  Running\nnginx-deployment-75675f5897-gstkw  Running"
 }
 
+mytest_with_spaces() {
+  # The namespace should not appear (it is set in 1st position)
+	[[ "$1" != "--namespace=test_ns" ]] || return 1
+
+	# Return the result
+	echo -e "NAME  PROP\ncert1  ----OOPS----\ncert2  ----BEGIN CERTIFICATE----"
+}
+
 
 @test "trying to find 1 POD with the lower-case syntax and a simple match" {
 	run try "at most 1 times every 5s to find 1 pod named 'nginx' with 'status' matching 'Running'"
@@ -96,6 +104,17 @@ mytest_with_namespace() {
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r matches the regular expression (found Running)." ]
 	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw matches the regular expression (found Running)." ]
+}
+
+
+@test "trying to find 1 certificate as a single-line value with spaces" {
+  DETIK_CLIENT_NAME="mytest_with_spaces"
+	run try "at most 1 times every 1s to find 1 certificate named 'cert' with 'value' matching '----BEGIN .*'"
+  [ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+  [ "${lines[1]}" = "Current value for cert1 is ----OOPS----..." ]
+	[ "${lines[2]}" = "cert2 matches the regular expression (found ----BEGIN CERTIFICATE----)." ]
 }
 
 
