@@ -8,6 +8,10 @@ mytest() {
 	echo -e "NAME  PROP\nnginx-deployment-75675f5897-6dg9r  Running\nnginx-deployment-75675f5897-gstkw  Running"
 }
 
+mytest_with_spaces() {
+	echo -e "NAME  PROP\ncert1  ----BEGIN CERTIFICATE----"
+}
+
 
 @test "trying to verify the status of a POD with the lower-case syntax and a simple match" {
 	run try "at most 1 times every 1s to get pods named 'nginx' and verify that 'status' matches 'Running'"
@@ -96,6 +100,26 @@ mytest() {
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r matches the regular expression (found Running)." ]
 	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw matches the regular expression (found Running)." ]
+}
+
+
+@test "trying to verify the content of a single-line value with spaces (success)" {
+	DETIK_CLIENT_NAME="mytest_with_spaces"
+	run try "at most 1 times every 1s to get something named 'cert1' and verify that 'value' matches '----BEGIN CERT.*'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "cert1 matches the regular expression (found ----BEGIN CERTIFICATE----)." ]
+}
+
+
+@test "trying to verify the content of a single-line value with spaces (failure)" {
+	DETIK_CLIENT_NAME="mytest_with_spaces"
+	run try "at most 1 times every 1s to get something named 'cert1' and verify that 'value' matches 'BEGIN CATE'"
+	[ "$status" -eq 3 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Current value for cert1 is ----BEGIN CERTIFICATE----..." ]
 }
 
 

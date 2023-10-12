@@ -263,8 +263,9 @@ verify_value() {
 	for line in $result; do
 
 		# Keep the second column (property to verify)
-		value=$(echo "$line" | awk '{ print $2 }')
-		element=$(echo "$line" | awk '{ print $1 }')
+		# This column may contain spaces.
+		value=$(cut -d ' ' -f 2- <<< "$line" | xargs)
+		element=$(cut -d ' ' -f 1 <<< "$line" | xargs)
 
 		# Compare with an exact value (case insensitive)
 		if [[ "$verify_strict_equality" == "true" ]]; then
@@ -285,7 +286,7 @@ verify_value() {
 				value=$(to_lower_case "$value")
 			fi
 
-			reg=$(echo "$value" | grep -E "$expected_value")
+			reg=$(echo "$value" | grep -E -- "$expected_value")
 			if [[ "$?" -ne 0 ]]; then
 				echo "Current value for $element is $value..."
 				invalid=$((invalid + 1))

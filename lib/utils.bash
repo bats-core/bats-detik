@@ -63,7 +63,7 @@ detik_debug() {
 
 	if [[ "$DEBUG_DETIK" == "true" ]]; then
 		debug "$1"
-  fi
+	fi
 }
 
 

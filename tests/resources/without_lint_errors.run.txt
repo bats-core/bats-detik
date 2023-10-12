@@ -178,18 +178,18 @@ run try "at most 2 times every 30s to find 1 svc named 'nginx' with '.spec.ports
 
 # Splitting a request over several lines
 run try "at most 2 times every 30s "\
-    "to get svc named 'nginx' and "\
-    "verify that '.spec.ports[*].targetPort' is '8484'"
+	"to get svc named 'nginx' and "\
+	"verify that '.spec.ports[*].targetPort' is '8484'"
 
 # Using quotes differently
 # (make sure to surround single quotes by double ones)
 run try at most 2 times every 30s \
-    to get svc named "'nginx'" and \
-    verify that "'.spec.ports[*].targetPort'" is "'8484'"
+	to get svc named "'nginx'" and \
+	verify that "'.spec.ports[*].targetPort'" is "'8484'"
 
 run try at most 2 times every 30s \
-    to get svc named "'nginx'" and \
-    verify that "'.spec.ports[*].targetPort'" matches "'[[:digit:]]+'"
+	to get svc named "'nginx'" and \
+	verify that "'.spec.ports[*].targetPort'" matches "'[[:digit:]]+'"
 
 run try "at most 2 times every 30s "\
 	"to find 1 svc named 'nginx' "\

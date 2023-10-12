@@ -8,6 +8,10 @@ mytest() {
 	echo -e "NAME  PROP\nnginx-deployment-75675f5897-6dg9r  Running\nnginx-deployment-75675f5897-gstkw  Running"
 }
 
+mytest_with_spaces() {
+	echo -e "NAME  PROP\ncert1  ----BEGIN CERTIFICATE----"
+}
+
 
 @test "trying to verify the status of a POD with the lower-case syntax" {
 	run try "at most 5 times every 5s to get pods named 'nginx' and verify that 'status' is 'running'"
@@ -45,6 +49,16 @@ mytest() {
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
 	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
+}
+
+
+@test "trying to verify the content of a single-line value with spaces" {
+	DETIK_CLIENT_NAME="mytest_with_spaces"
+	run try "at most 1 times every 1s to get something named 'cert1' and verify that 'value' is '----BEGIN CERTIFICATE----'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "cert1 has the right value (----begin certificate----)." ]
 }
 
 
