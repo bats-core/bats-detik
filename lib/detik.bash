@@ -286,7 +286,6 @@ verify_value() {
 		# Compare with an exact value (case insensitive)
 		if [[ "$exp" =~ "more" ]]; then
 			if [[ "$value" -gt "$expected_value" ]]; then
-				detik_debug "$element matches the regular expression (found $value)."
 				echo "$element matches the regular expression (found $value)."
 				valid=$((valid + 1))
 			else
