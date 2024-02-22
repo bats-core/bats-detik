@@ -12,6 +12,10 @@ mytest_with_spaces() {
 	echo -e "NAME  PROP\ncert1  ----BEGIN CERTIFICATE----"
 }
 
+mytest_deployment(){
+	echo -e "NAME PROP\nnginx 2"
+}
+
 
 @test "trying to verify the status of a POD with the lower-case syntax" {
 	run try "at most 5 times every 5s to get pods named 'nginx' and verify that 'status' is 'running'"
@@ -223,4 +227,42 @@ mytest_with_spaces() {
 
 	[[ -f "$path.backup" ]] && mv "$path.backup" "$path"
 	rm -rf "$path.cmp"
+}
+
+
+@test "trying to verify the replicas of a DEPLOYMENT is more than with the lower-case syntax" {
+	DETIK_CLIENT_NAME=mytest_deployment
+	run try "at most 1 times every 5s to get deployment named 'nginx' and verify that 'status.readyReplicas' is more than '1'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx matches the regular expression (found 2)." ]
+}
+
+
+@test "trying to verify the replicas of a DEPLOYMENT is less than with the lower-case syntax" {
+	DETIK_CLIENT_NAME=mytest_deployment
+	run try "at most 1 times every 5s to get deployment named 'nginx' and verify that 'status.readyReplicas' is less than '3'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx matches the regular expression (found 2)." ]
+}
+
+@test "trying to verify the replicas of a DEPLOYMENT is more than with the lower-case syntax with higher value" {
+	DETIK_CLIENT_NAME=mytest_deployment
+	run try "at most 1 times every 5s to get deployment named 'nginx' and verify that 'status.readyReplicas' is more than '2'"
+	[ "$status" -eq 3 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Current value for nginx is not more than 2..." ]
+}
+
+@test "trying to verify the replicas of a DEPLOYMENT is less than with the lower-case syntax with lower value" {
+	DETIK_CLIENT_NAME=mytest_deployment
+	run try "at most 1 times every 5s to get deployment named 'nginx' and verify that 'status.readyReplicas' is less than '1'"
+	[ "$status" -eq 3 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Current value for nginx is not less than 1..." ]
 }

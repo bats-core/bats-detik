@@ -40,7 +40,7 @@ try() {
 	expected_count=""
 	verify_strict_equality="true"
 
-	if [[ "$exp" =~ $try_regex_verify_is ]]; then
+	if [[ "$exp" =~ $try_regex_verify_is ]] || [[ "$exp" =~ $try_regex_verify_is_more_than ]] || [[ "$exp" =~ $try_regex_verify_is_less_than ]]; then
 
 		# Extract parameters
 		times="${BASH_REMATCH[1]}"
@@ -97,7 +97,7 @@ try() {
 		for ((i=1; i<=times; i++)); do
 
 			# Verify the value
-			verify_value "$verify_strict_equality" "$property" "$expected_value" "$resource" "$name" "$expected_count" && code=$? || code=$?
+			verify_value "$verify_strict_equality" "$property" "$expected_value" "$resource" "$name" "$expected_count" "$exp" && code=$? || code=$?
 
 			# Break the loop prematurely?
 			if [[ "$code" == "0" ]]; then
@@ -145,7 +145,7 @@ verify() {
 		echo "An empty expression was not expected."
 		return 1
 
-	elif [[ "$exp" =~ $verify_regex_count_is ]] || [[ "$exp" =~ $verify_regex_count_are ]]; then
+	elif [[ "$exp" =~ $verify_regex_count_is ]] || [[ "$exp" =~ $verify_regex_count_are ]] || [[ "$exp" =~ $verify_regex_count_less_than ]] || [[ "$exp" =~ $verify_regex_count_more_than ]]; then
 		card="${BASH_REMATCH[1]}"
 		resource=$(to_lower_case "${BASH_REMATCH[2]}")
 		name="${BASH_REMATCH[3]}"
@@ -168,7 +168,22 @@ verify() {
 		detik_debug "-----DETIK:end-----"
 		detik_debug ""
 
-		if [[ "$result" == "$card" ]]; then
+		if [[ "$exp" =~ "less" ]]; then
+			if [[ "$result" -lt "$card" ]]; then
+				echo "Found $result $resource named $name (less than $card as expected)."
+			else
+				echo "Found $result $resource named $name (instead of less than $card expected)."
+				return 3
+					
+			fi
+		elif [[ "$exp" =~ "more" ]]; then
+			if [[ "$result" -gt "$card" ]]; then
+				echo "Found $result $resource named $name (more than $card as expected)."
+			else
+				echo "Found $result $resource named $name (instead of more than $card expected)."
+				return 3
+			fi
+		elif [[ "$result" == "$card" ]]; then
 			echo "Found $result $resource named $name (as expected)."
 		else
 			echo "Found $result $resource named $name (instead of $card expected)."
@@ -227,6 +242,7 @@ verify_value() {
 	resource="$4"
 	name="$5"
 	expected_count="$6"
+	exp="$7"
 
 	# List the items and remove the first line (the one that contains the column names)
 	query=$(build_k8s_request "$property")
@@ -268,7 +284,24 @@ verify_value() {
 		element=$(cut -d ' ' -f 1 <<< "$line" | xargs)
 
 		# Compare with an exact value (case insensitive)
-		if [[ "$verify_strict_equality" == "true" ]]; then
+		if [[ "$exp" =~ "more" ]]; then
+			if [[ "$value" -gt "$expected_value" ]]; then
+				detik_debug "$element matches the regular expression (found $value)."
+				echo "$element matches the regular expression (found $value)."
+				valid=$((valid + 1))
+			else
+				echo "Current value for $element is not more than $expected_value..."
+				invalid=$((invalid + 1))
+			fi
+		elif [[ "$exp" =~ "less" ]]; then
+			if [[ "$value" -lt "$expected_value" ]]; then
+				echo "$element matches the regular expression (found $value)."
+				valid=$((valid + 1))
+			else
+				echo "Current value for $element is not less than $expected_value..."
+				invalid=$((invalid + 1))
+			fi
+		elif [[ "$verify_strict_equality" == "true" ]]; then
 			value=$(to_lower_case "$value")
 			expected_value=$(to_lower_case "$expected_value")
 			if [[ "$value" != "$expected_value" ]]; then
@@ -278,7 +311,6 @@ verify_value() {
 				echo "$element has the right value ($value)."
 				valid=$((valid + 1))
 			fi
-
 		# Verify a regex (we preserve the case)
 		else
 			# We do not want another syntax for case-insensitivity
