@@ -17,6 +17,8 @@ DETIK_CLIENT_NAME="kubectl"
 # Basic examples
 verify "there are 1 service named 'nginx'"
 verify "there are 4 pods named 'nginx'"
+verify "there are more than 2 pods named 'nginx'"
+verify "there are less than 5 pods named 'nginx'"
 
 # The same thing (it is case insensitive)
 verify "There are 4 pods naMed 'nginx'"
@@ -61,6 +63,10 @@ try "at most 5 times every 5s to get pods named 'nginx' and verify that 'status'
 
 # The same thing (it is case insensitive)
 try "at most 5 times every 15s to GET pods named 'nginx' and verify that 'status' is 'RUNNING'"
+
+# Basic examples with more/less than
+try "at most 5 times every 5s to get deploy named 'nginx' and verify that 'status.currentReplicas' is more than '1'"
+try "at most 5 times every 5s to get deploy named 'nginx' and verify that 'status.currentReplicas' is less than '3'"
 
 # Use short names for resources ('po' instead of 'pods')
 # See https://kubernetes.io/docs/reference/kubectl/overview/#resource-types
