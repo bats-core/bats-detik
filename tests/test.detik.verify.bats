@@ -621,3 +621,39 @@ mytest_with_namespace() {
 	rm -rf "$path.cmp"
 	[ -f "$path.backup" ] && mv "$path.backup" "$path"
 }
+
+
+@test "verifying the number of PODs with the lower-case syntax (more than, plural)" {
+	run verify "there are more than 1 pods named 'nginx'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Found 2 pods named nginx (more than 1 as expected)." ]
+}
+
+
+@test "verifying the number of PODs with the lower-case syntax (less than, plural)" {
+	run verify "there are less than 4 pods named 'nginx'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Found 2 pods named nginx (less than 4 as expected)." ]
+}
+
+
+@test "verifying the number of PODs with the lower-case syntax failure (more than, plural)" {
+	run verify "there are more than 5 pods named 'nginx'"
+	[ "$status" -eq 3 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Found 2 pods named nginx (instead of more than 5 expected)." ]
+}
+
+
+@test "verifying the number of PODs with the lower-case syntax failure (less than, plural)" {
+	run verify "there are less than 1 pods named 'nginx'"
+	[ "$status" -eq 3 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Found 2 pods named nginx (instead of less than 1 expected)." ]
+}
