@@ -145,7 +145,7 @@ verify() {
 		echo "An empty expression was not expected."
 		return 1
 
-	elif [[ "$exp" =~ $verify_regex_count_is ]] || [[ "$exp" =~ $verify_regex_count_are ]] || [[ "$exp" =~ $verify_regex_count_less_than ]] || [[ "$exp" =~ $verify_regex_count_more_than ]]; then
+	elif [[ "$exp" =~ $verify_regex_count_is ]] || [[ "$exp" =~ $verify_regex_count_are ]] || [[ "$exp" =~ $verify_regex_count_is_less_than ]] || [[ "$exp" =~ $verify_regex_count_is_more_than ]]; then
 		card="${BASH_REMATCH[1]}"
 		resource=$(to_lower_case "${BASH_REMATCH[2]}")
 		name="${BASH_REMATCH[3]}"
@@ -168,15 +168,14 @@ verify() {
 		detik_debug "-----DETIK:end-----"
 		detik_debug ""
 
-		if [[ "$exp" =~ "less" ]]; then
+		if [[ "$exp" =~ "less than" ]]; then
 			if [[ "$result" -lt "$card" ]]; then
 				echo "Found $result $resource named $name (less than $card as expected)."
 			else
 				echo "Found $result $resource named $name (instead of less than $card expected)."
-				return 3
-					
+				return 3	
 			fi
-		elif [[ "$exp" =~ "more" ]]; then
+		elif [[ "$exp" =~ "more than" ]]; then
 			if [[ "$result" -gt "$card" ]]; then
 				echo "Found $result $resource named $name (more than $card as expected)."
 			else
@@ -284,7 +283,7 @@ verify_value() {
 		element=$(cut -d ' ' -f 1 <<< "$line" | xargs)
 
 		# Compare with an exact value (case insensitive)
-		if [[ "$exp" =~ "more" ]]; then
+		if [[ "$exp" =~ "more than" ]]; then
 			if [[ "$value" -gt "$expected_value" ]]; then
 				echo "$element matches the regular expression (found $value)."
 				valid=$((valid + 1))
@@ -292,7 +291,7 @@ verify_value() {
 				echo "Current value for $element is not more than $expected_value..."
 				invalid=$((invalid + 1))
 			fi
-		elif [[ "$exp" =~ "less" ]]; then
+		elif [[ "$exp" =~ "less than" ]]; then
 			if [[ "$value" -lt "$expected_value" ]]; then
 				echo "$element matches the regular expression (found $value)."
 				valid=$((valid + 1))

@@ -12,8 +12,8 @@ try_regex_find_matching="^at +most +([0-9]+) +times +every +([0-9]+)s +to +find 
 # The regex for the "verify" key word
 verify_regex_count_is="^there +is +(0|1) +([a-z]+) +named +'([^']+)'$"
 verify_regex_count_are="^there +are +([0-9]+) +([a-z]+) +named +'([^']+)'$"
-verify_regex_count_less_than="^there are less than +([0-9]+) +([a-z]+) +named +'([^']+)'$"
-verify_regex_count_more_than="^there are more than +([0-9]+) +([a-z]+) +named +'([^']+)'$"
+verify_regex_count_is_less_than="^there are less than +([0-9]+) +([a-z]+) +named +'([^']+)'$"
+verify_regex_count_is_more_than="^there are more than +([0-9]+) +([a-z]+) +named +'([^']+)'$"
 verify_regex_property_is="^'([^']+)' +is +'([^']+)' +for +([a-z]+) +named +'([^']+)'$"
 verify_regex_property_matches="^'([^']+)' +matches +'([^']+)' +for +([a-z]+) +named +'([^']+)'$"
 
