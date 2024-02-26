@@ -148,6 +148,8 @@ DETIK_CLIENT_NAMESPACE="my-specific-namespace"
 # Verify the number of PODS and services
 verify "there are 2 pods named 'nginx'"
 verify "there is 1 service named 'nginx'"
+verify "there are less than 3 pods named 'nginx'"
+verify "there are more than 1 pods named 'nginx'"
 
 # Verify assertions on resources
 verify "'status' is 'running' for pods named 'nginx'"
@@ -157,6 +159,8 @@ verify "'.spec.ports[*].targetPort' is '8484' for services named 'nginx'"
 # You can also specify a number of attempts
 try "at most 5 times every 30s to get pods named 'nginx' and verify that 'status' is 'running'"
 try "at most 5 times every 30s to get svc named 'nginx' and verify that '.spec.ports[*].targetPort' is '8484'"
+try "at most 5 times every 30s to get deployment named 'nginx' and verify that 'status.currentReplicas' is more than '2'"
+try "at most 5 times every 30s to get deployment named 'nginx' and verify that 'status.currentReplicas' is less than '4'"
 
 # Long assertions can also be split over several lines
 try "at most 5 times every 30s " \
@@ -283,8 +287,14 @@ Verify there are N resources of this type with this name pattern.
 # Expecting 0 or 1 instance
 verify "there is <0 or 1> <resource-type> named '<regular-expression>'"
 
-# Expecting more than 1 instance
+# Expecting <number> instances
 verify "there are <number> <resource-type> named '<regular-expression>'"
+
+# Expecting more than <number> instances
+verify "there are more than <number> <resource-type> named '<regular-expression>'"
+
+# Expecting less than <number> instances
+verify "there are less than <number> <resource-type> named '<regular-expression>'"
 ```
 
 *resource-type* is one of the K8s ones (e.g. `pods`, `po`, `services`, `svc`...).  
