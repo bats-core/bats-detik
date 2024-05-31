@@ -1,21 +1,24 @@
 #!/bin/bash
 
+# The pattern for resource types
+# (pod, PODs, complex.crd.resource, etc.)
+resource_type_pattern="[a-z][a-z.]+"
 
 # The regex for the "try" key word
-try_regex_verify_is="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +([a-z]+) +named +'([^']+)' +and +verify +that +'([^']+)' +is +'([^']+)'$"
-try_regex_verify_is_more_than="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +([a-z]+) +named +'([^']+)' +and +verify +that +'([^']+)' +is more than +'([^']+)'$"
-try_regex_verify_is_less_than="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +([a-z]+) +named +'([^']+)' +and +verify +that +'([^']+)' +is less than +'([^']+)'$"
-try_regex_verify_matches="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +([a-z]+) +named +'([^']+)' +and +verify +that +'([^']+)' +matches +'([^']+)'$"
-try_regex_find_being="^at +most +([0-9]+) +times +every +([0-9]+)s +to +find +([0-9]+) +([a-z]+) +named +'([^']+)' +with +'([^']+)' +being +'([^']+)'$"
-try_regex_find_matching="^at +most +([0-9]+) +times +every +([0-9]+)s +to +find +([0-9]+) +([a-z]+) +named +'([^']+)' +with +'([^']+)' +matching +'([^']+)'$"
+try_regex_verify_is="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +($resource_type_pattern) +named +'([^']+)' +and +verify +that +'([^']+)' +is +'([^']+)'$"
+try_regex_verify_is_more_than="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +($resource_type_pattern) +named +'([^']+)' +and +verify +that +'([^']+)' +is more than +'([^']+)'$"
+try_regex_verify_is_less_than="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +($resource_type_pattern) +named +'([^']+)' +and +verify +that +'([^']+)' +is less than +'([^']+)'$"
+try_regex_verify_matches="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +($resource_type_pattern) +named +'([^']+)' +and +verify +that +'([^']+)' +matches +'([^']+)'$"
+try_regex_find_being="^at +most +([0-9]+) +times +every +([0-9]+)s +to +find +([0-9]+) +($resource_type_pattern) +named +'([^']+)' +with +'([^']+)' +being +'([^']+)'$"
+try_regex_find_matching="^at +most +([0-9]+) +times +every +([0-9]+)s +to +find +([0-9]+) +($resource_type_pattern) +named +'([^']+)' +with +'([^']+)' +matching +'([^']+)'$"
 
 # The regex for the "verify" key word
-verify_regex_count_is="^there +is +(0|1) +([a-z]+) +named +'([^']+)'$"
-verify_regex_count_are="^there +are +([0-9]+) +([a-z]+) +named +'([^']+)'$"
-verify_regex_count_is_less_than="^there are less than +([0-9]+) +([a-z]+) +named +'([^']+)'$"
-verify_regex_count_is_more_than="^there are more than +([0-9]+) +([a-z]+) +named +'([^']+)'$"
-verify_regex_property_is="^'([^']+)' +is +'([^']+)' +for +([a-z]+) +named +'([^']+)'$"
-verify_regex_property_matches="^'([^']+)' +matches +'([^']+)' +for +([a-z]+) +named +'([^']+)'$"
+verify_regex_count_is="^there +is +(0|1) +($resource_type_pattern) +named +'([^']+)'$"
+verify_regex_count_are="^there +are +([0-9]+) +($resource_type_pattern) +named +'([^']+)'$"
+verify_regex_count_is_less_than="^there are less than +([0-9]+) +($resource_type_pattern) +named +'([^']+)'$"
+verify_regex_count_is_more_than="^there are more than +([0-9]+) +($resource_type_pattern) +named +'([^']+)'$"
+verify_regex_property_is="^'([^']+)' +is +'([^']+)' +for +($resource_type_pattern) +named +'([^']+)'$"
+verify_regex_property_matches="^'([^']+)' +matches +'([^']+)' +for +($resource_type_pattern) +named +'([^']+)'$"
 
 
 # Prints a string in lower case.

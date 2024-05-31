@@ -76,6 +76,17 @@ mytest_with_namespace() {
 }
 
 
+@test "verifying the number of resources with their type including dots" {
+  # The value is not important. We want to make sure resource
+  # types with dots is supported.
+	run verify "There are 2 settings.management.cattle.io named 'nginx'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Found 2 settings.management.cattle.io named nginx (as expected)." ]
+}
+
+
 @test "verifying the number of PODs with upper-case letters (with a different K8s namespace)" {
 	DETIK_CLIENT_NAME="mytest_with_namespace"
 	DETIK_CLIENT_NAMESPACE="test_ns"

@@ -124,8 +124,20 @@ mytest_with_spaces() {
 }
 
 
-@test "trying to find of a POD with upper-case letters" {
+@test "trying to find a POD with upper-case letters" {
 	run try "at most 5 times eVery 5s to find 2 pods named 'nginx' with 'status' being 'RUNNING'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 3 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "nginx-deployment-75675f5897-6dg9r has the right value (running)." ]
+	[ "${lines[2]}" = "nginx-deployment-75675f5897-gstkw has the right value (running)." ]
+}
+
+
+@test "trying to find resource whose type contains a dot" {
+  # The value is not important. We want to make sure resource
+  # types with dots is supported.
+	run try "at most 5 times eVery 5s to find 2 settings.management.cattle.io named 'nginx' with 'status' being 'RUNNING'"
 	[ "$status" -eq 0 ]
 	[ ${#lines[@]} -eq 3 ]
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
