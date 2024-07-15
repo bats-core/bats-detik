@@ -279,6 +279,14 @@ The syntax is quite simple and may be easily adapted for other solutions, such a
 
 ## Syntax Reference
 
+For all the available sentences, both a resource name and a resource type are expected.  
+The resource name can be a simple string (e.g. `nginx`) or a regular expression
+(e.g. `^nginx-[a-z0-9]{9,10}-[a-z0-9]{5}\$`), while the resource type is one of
+the K8s ones (e.g. `pods`, `po`, `services`, `svc`...) or a CRD. See
+[https://kubernetes.io/docs/reference/kubectl/overview/#resource-types](https://kubernetes.io/docs/reference/kubectl/overview/#resource-types) for a complete reference of the official resources. The available custom resources (e.g.
+`settings.management.cattle.io`) will depend on your cluster setup.
+
+
 ### Counting Resources
 
 Verify there are N resources of this type with this name pattern.
@@ -297,15 +305,11 @@ verify "there are more than <number> <resource-type> named '<regular-expression>
 verify "there are less than <number> <resource-type> named '<regular-expression>'"
 ```
 
-*resource-type* is one of the K8s ones (e.g. `pods`, `po`, `services`, `svc`...).  
-See [https://kubernetes.io/docs/reference/kubectl/overview/#resource-types](https://kubernetes.io/docs/reference/kubectl/overview/#resource-types) for a complete reference.
-
-
 > :warning: This simple assertion may fail sometimes.
 >
 > As an example, if you count the number of PODs, run your test and then kill the POD, they will still be listed, with the `TERMINATING` state.
 >
-> So, most of the time, you will want to verify the number of instances with a given property value. Example: count the number of PODs with a given name pattern and having the `started` status.
+> So, most of the time, you will want to verify the number of instances with a given property value. Example: count the number of PODs with a given name pattern and having the `running` status.
 
 Hence this additional syntax (using [next section](#verifying-property-values) documentation to verify additionnal properties):
 

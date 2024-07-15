@@ -76,6 +76,15 @@ mytest_with_namespace() {
 }
 
 
+@test "verifying the number of PODs with an extended pattern syntax (exact number, 0 as singular)" {
+	run verify "There are 2 PODS named '^nginx-deployment-[a-z0-9]{9,10}-[a-z0-9]{5}\$'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Found 2 pods named ^nginx-deployment-[a-z0-9]{9,10}-[a-z0-9]{5}\$ (as expected)." ]
+}
+
+
 @test "verifying the number of resources with their type including dots" {
   # The value is not important. We want to make sure resource
   # types with dots is supported.

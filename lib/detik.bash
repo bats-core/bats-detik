@@ -153,7 +153,11 @@ verify() {
 		echo "Valid expression. Verification in progress..."
 		query=$(build_k8s_request "")
 		client_with_options=$(build_k8s_client_with_options)
-		result=$(eval $client_with_options get $resource $query | grep $name | tail -n +1 | wc -l | tr -d '[:space:]')
+		result=$(eval $client_with_options get $resource $query \
+			| tail -n +2 \
+			| filter_by_resource_name "$name" \
+			| wc -l \
+			| tr -d '[:space:]')
 
 		# Debug?
 		detik_debug "-----DETIK:begin-----"
@@ -173,7 +177,7 @@ verify() {
 				echo "Found $result $resource named $name (less than $card as expected)."
 			else
 				echo "Found $result $resource named $name (instead of less than $card expected)."
-				return 3	
+				return 3
 			fi
 		elif [[ "$exp" =~ "more than" ]]; then
 			if [[ "$result" -gt "$card" ]]; then
@@ -243,10 +247,12 @@ verify_value() {
 	expected_count="$6"
 	exp="$7"
 
-	# List the items and remove the first line (the one that contains the column names)
+	# 1. Query / list the items
+	# 2. Remove the first line (the one that contains the column names)
+	# 3. Filter by resource name
 	query=$(build_k8s_request "$property")
 	client_with_options=$(build_k8s_client_with_options)
-	result=$(eval $client_with_options get $resource $query | grep $name | tail -n +1)
+	result=$(eval $client_with_options get $resource $query | tail -n +2 | filter_by_resource_name "$name")
 
 	# Debug?
 	detik_debug "-----DETIK:begin-----"
@@ -379,4 +385,22 @@ build_k8s_client_with_options() {
 	fi
 
 	echo "$client_with_options"
+}
+
+
+# Filters results by resource name (or name pattern).
+# The results are directly read, they are not passed as variables.
+#
+# @param $1 the resource name or name pattern
+# @return 0
+filter_by_resource_name() {
+
+	# For all the output lines...
+	while IFS= read -r line; do
+		# ... extract the resource name (first column)
+		# and only keep the lines where the resource name matches
+		if echo "$line" | cut -d ' ' -f1 | grep -qE $1; then
+			echo "$line"
+		fi
+	done
 }
