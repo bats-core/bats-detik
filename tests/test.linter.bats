@@ -72,6 +72,9 @@ setup() {
 
 	run verify_against_pattern "at most 5 times eVery 5s to GET pods named nginx' and verify that 'status' matches '^RUNNING$'" "$try_regex_verify_matches"
 	[ "$status" -eq 1 ]
+
+	run verify_against_pattern "at most 5 times eVery 5s to GET pods named '^nginx-deployment-[a-z0-9]{9,10}-[a-z0-9]{4}\$' and verify that 'status' matches '^RUNNING$'" "$try_regex_verify_matches"
+	[ "$status" -eq 0 ]
 }
 
 
