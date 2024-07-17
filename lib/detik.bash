@@ -399,7 +399,7 @@ filter_by_resource_name() {
 	while IFS= read -r line; do
 		# ... extract the resource name (first column)
 		# and only keep the lines where the resource name matches
-		if echo "$line" | cut -d ' ' -f1 | grep -qE $1; then
+		if echo "$line" | cut -d ' ' -f1 | grep -qE "$1"; then
 			echo "$line"
 		fi
 	done
