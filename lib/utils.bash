@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # The pattern for resource types
-# (pod, PODs, complex.crd.resource, etc.)
-resource_type_pattern="[a-z][a-z.]+"
+# (pod, PODs, complex.crd.resource, ec2nodeclass, etc.)
+resource_type_pattern="[a-z][0-9a-z.]+"
 
 # The regex for the "try" key word
 try_regex_verify_is="^at +most +([0-9]+) +times +every +([0-9]+)s +to +get +($resource_type_pattern) +named +'([^']+)' +and +verify +that +'([^']+)' +is +'([^']+)'$"

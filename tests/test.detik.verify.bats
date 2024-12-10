@@ -677,3 +677,12 @@ mytest_with_namespace() {
 	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
 	[ "${lines[1]}" = "Found 2 pods named nginx (instead of less than 1 expected)." ]
 }
+
+
+@test "verifying the number of ec2nodeclass with the lower-case syntax (resource name with a number)" {
+	run verify "there are 2 ec2nodeclass named 'nginx'"
+	[ "$status" -eq 0 ]
+	[ ${#lines[@]} -eq 2 ]
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Found 2 ec2nodeclass named nginx (as expected)." ]
+}
