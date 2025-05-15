@@ -7,7 +7,7 @@ on:
 jobs:
   test-detik:
     name: Test DETIK
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - name: Install BATS
       run: |
@@ -20,7 +20,7 @@ jobs:
 
   test-docker-build:
     name: Build the Docker image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
     - name: Execute the build script
