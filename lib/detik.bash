@@ -15,7 +15,6 @@ source "$directory/utils.bash"
 try() {
 
 	# Concatenate all the arguments into a single string
-	IFS=' '
 	exp="$*"
 
 	# Trim the expression
@@ -88,9 +87,6 @@ try() {
 	# Do we have something?
 	if [[ "$times" != "" ]]; then
 
-		# Prevent line breaks from being removed in command results
-		IFS=""
-
 		# Start the loop
 		echo "Valid expression. Verification in progress..."
 		code=0
@@ -131,7 +127,6 @@ try() {
 verify() {
 
 	# Concatenate all the arguments into a single string
-	IFS=' '
 	exp="$*"
 
 	# Trim the expression
@@ -272,66 +267,66 @@ verify_value() {
 	detik_debug ""
 
 	# Is the result empty?
-	empty=0
-	if [[ "$result" == "" ]]; then
-		echo "No resource of type '$resource' was found with the name '$name'."
-	fi
-
-	# Verify the result
-	IFS=$'\n'
 	invalid=0
 	valid=0
-	for line in $result; do
+	if [[ "$result" == "" ]]; then
+		echo "No resource of type '$resource' was found with the name '$name'."
 
-		# Keep the second column (property to verify)
-		# This column may contain spaces.
-		value=$(cut -d ' ' -f 2- <<< "$line" | xargs)
-		element=$(cut -d ' ' -f 1 <<< "$line" | xargs)
+	# Otherwise, verify the result
+	else
+		mapfile -t resultAsArray <<< "$result"
+		for line in "${resultAsArray[@]}"; do
 
-		# Compare with an exact value (case insensitive)
-		if [[ "$exp" =~ "more than" ]]; then
-			if [[ "$value" -gt "$expected_value" ]]; then
-				echo "$element matches the regular expression (found $value)."
-				valid=$((valid + 1))
-			else
-				echo "Current value for $element is not more than $expected_value..."
-				invalid=$((invalid + 1))
-			fi
-		elif [[ "$exp" =~ "less than" ]]; then
-			if [[ "$value" -lt "$expected_value" ]]; then
-				echo "$element matches the regular expression (found $value)."
-				valid=$((valid + 1))
-			else
-				echo "Current value for $element is not less than $expected_value..."
-				invalid=$((invalid + 1))
-			fi
-		elif [[ "$verify_strict_equality" == "true" ]]; then
-			value=$(to_lower_case "$value")
-			expected_value=$(to_lower_case "$expected_value")
-			if [[ "$value" != "$expected_value" ]]; then
-				echo "Current value for $element is $value..."
-				invalid=$((invalid + 1))
-			else
-				echo "$element has the right value ($value)."
-				valid=$((valid + 1))
-			fi
-		# Verify a regex (we preserve the case)
-		else
-			# We do not want another syntax for case-insensitivity
-			if [ "$DETIK_REGEX_CASE_INSENSITIVE_PROPERTIES" = "true" ]; then
+			# Keep the second column (property to verify)
+			# This column may contain spaces.
+			value=$(cut -d ' ' -f 2- <<< "$line" | xargs)
+			element=$(cut -d ' ' -f 1 <<< "$line" | xargs)
+
+			# Compare with an exact value (case insensitive)
+			if [[ "$exp" =~ "more than" ]]; then
+				if [[ "$value" -gt "$expected_value" ]]; then
+					echo "$element matches the regular expression (found $value)."
+					valid=$((valid + 1))
+				else
+					echo "Current value for $element is not more than $expected_value..."
+					invalid=$((invalid + 1))
+				fi
+			elif [[ "$exp" =~ "less than" ]]; then
+				if [[ "$value" -lt "$expected_value" ]]; then
+					echo "$element matches the regular expression (found $value)."
+					valid=$((valid + 1))
+				else
+					echo "Current value for $element is not less than $expected_value..."
+					invalid=$((invalid + 1))
+				fi
+			elif [[ "$verify_strict_equality" == "true" ]]; then
 				value=$(to_lower_case "$value")
-			fi
-
-			reg=$(echo "$value" | grep -E -- "$expected_value")
-			if [[ "$?" -ne 0 ]]; then
-				echo "Current value for $element is $value..."
-				invalid=$((invalid + 1))
+				expected_value=$(to_lower_case "$expected_value")
+				if [[ "$value" != "$expected_value" ]]; then
+					echo "Current value for $element is $value..."
+					invalid=$((invalid + 1))
+				else
+					echo "$element has the right value ($value)."
+					valid=$((valid + 1))
+				fi
+			# Verify a regex (we preserve the case)
 			else
-				echo "$element matches the regular expression (found $reg)."
-				valid=$((valid + 1))
+				# We do not want another syntax for case-insensitivity
+				if [ "$DETIK_REGEX_CASE_INSENSITIVE_PROPERTIES" = "true" ]; then
+					value=$(to_lower_case "$value")
+				fi
+
+				reg=$(echo "$value" | grep -E -- "$expected_value")
+				if [[ "$?" -ne 0 ]]; then
+					echo "Current value for $element is $value..."
+					invalid=$((invalid + 1))
+				else
+					echo "$element matches the regular expression (found $reg)."
+					valid=$((valid + 1))
+				fi
 			fi
-		fi
-	done
+		done
+	fi
 
 	# Do we have the right number of elements?
 	if [[ "$expected_count" != "" ]]; then
