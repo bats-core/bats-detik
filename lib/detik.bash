@@ -147,8 +147,9 @@ verify() {
 
 		echo "Valid expression. Verification in progress..."
 		query=$(build_k8s_request "")
-		client_with_options=$(build_k8s_client_with_options)
-		result=$(eval $client_with_options get $resource $query \
+		client_options=$(build_k8s_client_options)
+		cmd=$(trim "$DETIK_CLIENT_NAME get $resource $query $client_options")
+		result=$(eval $cmd \
 			| tail -n +2 \
 			| filter_by_resource_name "$name" \
 			| wc -l \
@@ -160,7 +161,7 @@ verify() {
 		detik_debug "$BATS_TEST_DESCRIPTION"
 		detik_debug ""
 		detik_debug "Client query:"
-		detik_debug "$client_with_options get $resource $query"
+		detik_debug "$cmd"
 		detik_debug ""
 		detik_debug "Result:"
 		detik_debug "$result"
@@ -246,8 +247,9 @@ verify_value() {
 	# 2. Remove the first line (the one that contains the column names)
 	# 3. Filter by resource name
 	query=$(build_k8s_request "$property")
-	client_with_options=$(build_k8s_client_with_options)
-	result=$(eval $client_with_options get $resource $query | tail -n +2 | filter_by_resource_name "$name")
+	client_options=$(build_k8s_client_options)
+	cmd=$(trim "$DETIK_CLIENT_NAME get $resource $query $client_options")
+	result=$(eval $cmd | tail -n +2 | filter_by_resource_name "$name")
 
 	# Debug?
 	detik_debug "-----DETIK:begin-----"
@@ -255,7 +257,7 @@ verify_value() {
 	detik_debug "$BATS_TEST_DESCRIPTION"
 	detik_debug ""
 	detik_debug "Client query:"
-	detik_debug "$client_with_options get $resource $query"
+	detik_debug "$cmd"
 	detik_debug ""
 	detik_debug "Result:"
 	detik_debug "$result"
@@ -269,7 +271,7 @@ verify_value() {
 	# Is the result empty?
 	invalid=0
 	valid=0
-	if [[ "$result" == "" ]]; then
+	if [[ "$result" == "" ]] && [[ "$expected_count" != "0" ]]; then
 		echo "No resource of type '$resource' was found with the name '$name'."
 
 	# Otherwise, verify the result
@@ -369,17 +371,20 @@ build_k8s_request() {
 }
 
 
-# Builds the client command, with the option for the K8s namespace, if any.
+# Builds the client options (e.g. the K8s namespace.
 # @return 0
-build_k8s_client_with_options() {
+build_k8s_client_options() {
 
-	client_with_options="$DETIK_CLIENT_NAME"
+	client_options=""
 	if [[ -n "$DETIK_CLIENT_NAMESPACE" ]]; then
 		# eval does not "like" the '-n' syntax
-		client_with_options="$DETIK_CLIENT_NAME --namespace=$DETIK_CLIENT_NAMESPACE"
+		client_options="--namespace=$DETIK_CLIENT_NAMESPACE"
+	elif [[ "$DETIK_CLIENT_NAMESPACE_ALL" == 'true' ]]; then
+		# eval does not "like" the '-n' syntax
+		client_options="--all-namespaces"
 	fi
 
-	echo "$client_with_options"
+	echo "$client_options"
 }
 
 

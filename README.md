@@ -145,6 +145,10 @@ DETIK_CLIENT_NAME="kubectl"
 # If not set, queries will be run in the default namespace.
 DETIK_CLIENT_NAMESPACE="my-specific-namespace"
 
+# If instead you want to target all the namespaces,
+# do not set DETIK_CLIENT_NAMESPACE. Instead, use:
+# DETIK_CLIENT_NAMESPACE_ALL="true"
+
 # Verify the number of PODS and services
 verify "there are 2 pods named 'nginx'"
 verify "there is 1 service named 'nginx'"

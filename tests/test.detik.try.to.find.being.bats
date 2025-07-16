@@ -6,24 +6,29 @@ load "../lib/detik"
 DETIK_CLIENT_NAME="mytest"
 DETIK_CLIENT_NAMESPACE=""
 mytest() {
-	# The namespace should not appear (it is set in 1st position)
-	[[ "$1" != "--namespace=test_ns" ]] || return 1
+	# The namespace should not appear (it is set in last position)
+	last_arg="${@: -1}"
+	[[ "$last_arg" != "--namespace=test_ns" ]] || return 1
+	[[ "$last_arg" != "--all-namespaces" ]] || return 1
 
 	# Return the result
 	echo -e "NAME  PROP\nnginx-deployment-75675f5897-6dg9r  Running\nnginx-deployment-75675f5897-gstkw  Running"
 }
 
 mytest_with_namespace() {
-	# A namespace is expected as the first argument
-	[[ "$1" == "--namespace=test_ns" ]] || return 1
+	# A namespace is expected as the last argument
+	last_arg="${@: -1}"
+	[[ "$last_arg" == "--namespace=test_ns" ]] || [[ "$last_arg" == "--all-namespaces" ]] || return 1
 
 	# Return the result
 	echo -e "NAME  PROP\nnginx-deployment-75675f5897-6dg9r  Running\nnginx-deployment-75675f5897-gstkw  Running"
 }
 
 mytest_with_spaces() {
-	# The namespace should not appear (it is set in 1st position)
-	[[ "$1" != "--namespace=test_ns" ]] || return 1
+	# The namespace should not appear (it is set in last position)
+	last_arg="${@: -1}"
+	[[ "$last_arg" != "--namespace=test_ns" ]] || return 1
+	[[ "$last_arg" != "--all-namespaces" ]] || return 1
 
 	# Return the result
 	echo -e "NAME  PROP\ncert1  ----OOPS----\ncert2  ----BEGIN CERTIFICATE----"
@@ -170,7 +175,7 @@ mytest_with_spaces() {
 }
 
 
-@test "trying to find of a POD with the wrong value (1 attempt)" {
+@test "trying to find a POD with the wrong value (1 attempt)" {
 	run try "at most 1 times every 1s to find 1 pod named 'nginx' with 'status' being 'initializing'"
 	[ "$status" -eq 3 ]
 	[ ${#lines[@]} -eq 4 ]
@@ -181,7 +186,7 @@ mytest_with_spaces() {
 }
 
 
-@test "trying to find of a POD with the wrong value (2 attempts)" {
+@test "trying to find a POD with the wrong value (2 attempts)" {
 	run try "at most 2 times every 1s to find 1 pod named 'nginx' with 'status' being 'initializing'"
 	[ "$status" -eq 3 ]
 	[ ${#lines[@]} -eq 7 ]
@@ -195,7 +200,7 @@ mytest_with_spaces() {
 }
 
 
-@test "trying to find of a POD with the wrong value (3 attempts)" {
+@test "trying to find a POD with the wrong value (3 attempts)" {
 	run try "at most 3 times every 1s to find 1 pod named 'nginx' with 'status' being 'initializing'"
 	[ "$status" -eq 3 ]
 	[ ${#lines[@]} -eq 10 ]
@@ -212,7 +217,7 @@ mytest_with_spaces() {
 }
 
 
-@test "trying to find of a POD with an invalid name" {
+@test "trying to find a POD with an invalid name" {
 	run try "at most 1 times every 1s to find 2 pods named 'nginx-something' with 'status' being 'running'"
 	[ "$status" -eq 3 ]
 	[ ${#lines[@]} -eq 3 ]
@@ -222,7 +227,7 @@ mytest_with_spaces() {
 }
 
 
-@test "trying to find of a POD with a pattern name" {
+@test "trying to find a POD with a pattern name" {
 	run try "at most 1 times every 1s to find 2 pods named 'ngin.*' with 'status' being 'running'"
 	[ "$status" -eq 0 ]
 	[ ${#lines[@]} -eq 3 ]
@@ -232,7 +237,7 @@ mytest_with_spaces() {
 }
 
 
-@test "trying to find of a POD with an invalid pattern name" {
+@test "trying to find a POD with an invalid pattern name" {
 	run try "at most 1 times every 1s to find 2 pods named 'ngin.+x' with 'status' being 'running'"
 	[ "$status" -eq 3 ]
 	[ ${#lines[@]} -eq 3 ]
@@ -242,7 +247,7 @@ mytest_with_spaces() {
 }
 
 
-@test "trying to find of a POD with the lower-case syntax (multi-lines)" {
+@test "trying to find a POD with the lower-case syntax (multi-lines)" {
 	run try "  at  most  5  times  every  5s  to  find 2  pods " \
 		" named  'nginx' " \
 		" with  'status'  being  'running' "
@@ -255,7 +260,7 @@ mytest_with_spaces() {
 }
 
 
-@test "trying to find of a POD with the lower-case syntax (multi-lines, without quotes)" {
+@test "trying to find a POD with the lower-case syntax (multi-lines, without quotes)" {
 	run try at  most  11  times  every  5s  to  find 2  pods \
 		named  "'nginx'"  \
 		with  "'status'"  being  "'running'"
@@ -268,7 +273,7 @@ mytest_with_spaces() {
 }
 
 
-@test "trying to find of a POD with the lower-case syntax (debug)" {
+@test "trying to find a POD with the lower-case syntax (debug)" {
 
 	debug_filename=$(basename -- "$BATS_TEST_FILENAME")
 	path="/tmp/detik/$debug_filename.debug"
@@ -297,7 +302,7 @@ mytest_with_spaces() {
 
 	echo "-----DETIK:begin-----" >&7
 	echo "$BATS_TEST_FILENAME" >&7
-	echo "trying to find of a POD with the lower-case syntax (debug)" >&7
+	echo "trying to find a POD with the lower-case syntax (debug)" >&7
 	echo "" >&7
 	echo "Client query:" >&7
 	echo "mytest get pods -o custom-columns=NAME:.metadata.name,PROP:.status.phase" >&7
@@ -320,7 +325,7 @@ mytest_with_spaces() {
 }
 
 
-@test "trying to find of a POD with the lower-case syntax (debug and a different K8s namespace)" {
+@test "trying to find a POD with the lower-case syntax (debug and a different K8s namespace)" {
 	DETIK_CLIENT_NAME="mytest_with_namespace"
 	DETIK_CLIENT_NAMESPACE="test_ns"
 
@@ -351,16 +356,70 @@ mytest_with_spaces() {
 
 	echo "-----DETIK:begin-----" >&7
 	echo "$BATS_TEST_FILENAME" >&7
-	echo "trying to find of a POD with the lower-case syntax (debug and a different K8s namespace)" >&7
+	echo "trying to find a POD with the lower-case syntax (debug and a different K8s namespace)" >&7
 	echo "" >&7
 	echo "Client query:" >&7
-	echo "mytest_with_namespace --namespace=test_ns get pods -o custom-columns=NAME:.metadata.name,PROP:.status.phase" >&7
+	echo "mytest_with_namespace get pods -o custom-columns=NAME:.metadata.name,PROP:.status.phase --namespace=test_ns" >&7
 	echo "" >&7
 	echo "Result:" >&7
 	echo "nginx-deployment-75675f5897-6dg9r  Running" >&7
 	echo "nginx-deployment-75675f5897-gstkw  Running" >&7
 	echo "" >&7
 	echo "Expected count: 2" >&7
+	echo "-----DETIK:end-----" >&7
+	echo "" >&7
+
+	exec 7>&-
+	run diff -q "$path" "$path.cmp"
+	[ "$status" -eq 0 ]
+	[ "$output" = "" ]
+
+	[ -f "$path.backup" ] && mv "$path.backup" "$path"
+	rm -rf "$path.cmp"
+}
+
+
+@test "trying to find 0 POD matching a condition (debug and all the K8s namespaces)" {
+	DETIK_CLIENT_NAME="mytest_with_namespace"
+	DETIK_CLIENT_NAMESPACE_ALL="true"
+
+	debug_filename=$(basename -- "$BATS_TEST_FILENAME")
+	path="/tmp/detik/$debug_filename.debug"
+	[ -f "$path" ] && mv "$path" "$path.backup"
+	[ ! -f "$path" ]
+
+	# Enable the debug flag
+	DEBUG_DETIK="true"
+	run try "at most 3 times every 1s to find 0 pod named '.*' with 'status' being 'crashLoopBackoff'"
+
+	# Reset the debug flag
+	DEBUG_DETIK=""
+
+	# Verify basic assertions
+	[ "$status" -eq 0 ]
+	echo "${lines[1]}" > /tmp/titi
+	[ "${lines[0]}" = "Valid expression. Verification in progress..." ]
+	[ "${lines[1]}" = "Current value for nginx-deployment-75675f5897-6dg9r is running..." ]
+	[ "${lines[2]}" = "Current value for nginx-deployment-75675f5897-gstkw is running..." ]
+
+	# Verify the debug file
+	[ -f "$path" ]
+
+	rm -rf "$path.cmp"
+	exec 7<> "$path.cmp"
+
+	echo "-----DETIK:begin-----" >&7
+	echo "$BATS_TEST_FILENAME" >&7
+	echo "trying to find 0 POD matching a condition (debug and all the K8s namespaces)" >&7
+	echo "" >&7
+	echo "Client query:" >&7
+	echo "mytest_with_namespace get pod -o custom-columns=NAME:.metadata.name,PROP:.status.phase --all-namespaces" >&7
+	echo "" >&7
+	echo "Result:" >&7
+	echo "nginx-deployment-75675f5897-6dg9r  Running" >&7
+	echo "nginx-deployment-75675f5897-gstkw  Running" >&7
+	echo "" >&7
+	echo "Expected count: 0" >&7
 	echo "-----DETIK:end-----" >&7
 	echo "" >&7
 

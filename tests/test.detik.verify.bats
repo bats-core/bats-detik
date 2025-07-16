@@ -6,16 +6,19 @@ DETIK_CLIENT_NAME="mytest"
 DETIK_CLIENT_NAMESPACE=""
 
 mytest() {
-	# The namespace should not appear (it is set in 1st position)
-	[[ "$1" != "--namespace=test_ns" ]] || return 1
+	# The namespace should not appear (it is set in last position)
+	last_arg="${@: -1}"
+	[[ "$last_arg" != "--namespace=test_ns" ]] || return 1
+	[[ "$last_arg" != "--all-namespaces" ]] || return 1
 
 	# Return the result
 	echo -e "NAME  PROP\nnginx-deployment-75675f5897-6dg9r  Running\nnginx-deployment-75675f5897-gstkw  Running"
 }
 
 mytest_with_namespace() {
-	# A namespace is expected as the first argument
-	[[ "$1" == "--namespace=test_ns" ]] || return 1
+	# A namespace is expected as the last argument
+	last_arg="${@: -1}"
+	[[ "$last_arg" == "--namespace=test_ns" ]] || [[ "$last_arg" == "--all-namespaces" ]] || return 1
 
 	# Return the result
 	echo -e "NAME  PROP\nnginx-deployment-75675f5897-6dg9r  Running\nnginx-deployment-75675f5897-gstkw  Running"
@@ -269,7 +272,7 @@ mytest_with_namespace() {
 	echo "verifying the number of PODs with the lower-case syntax (debug and a different K8s namespace)" >&7
 	echo "" >&7
 	echo "Client query:" >&7
-	echo "mytest_with_namespace --namespace=test_ns get pods -o custom-columns=NAME:.metadata.name" >&7
+	echo "mytest_with_namespace get pods -o custom-columns=NAME:.metadata.name --namespace=test_ns" >&7
 	echo "" >&7
 	echo "Result:" >&7
 	echo "2" >&7
