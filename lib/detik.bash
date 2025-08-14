@@ -276,8 +276,15 @@ verify_value() {
 
 	# Otherwise, verify the result
 	else
-		mapfile -t resultAsArray <<< "$result"
+		# Read line by line and avoid overriding IFS globally.
+		# Do not use mapfile (mapfile -t resultAsArray <<< "$result")
+		# as it is not available in Bash 3 (used on MacOS)
+		resultAsArray=()
+		while IFS= read -r line; do resultAsArray+=("$line"); done <<< "$result"
+
+		# Now, deal with every line
 		for line in "${resultAsArray[@]}"; do
+			echo "$line" >> /tmp/toto3
 
 			# Keep the second column (property to verify)
 			# This column may contain spaces.
