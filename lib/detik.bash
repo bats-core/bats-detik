@@ -15,7 +15,6 @@ source "$directory/utils.bash"
 try() {
 
 	# Concatenate all the arguments into a single string
-	IFS=' '
 	exp="$*"
 
 	# Trim the expression
@@ -88,9 +87,6 @@ try() {
 	# Do we have something?
 	if [[ "$times" != "" ]]; then
 
-		# Prevent line breaks from being removed in command results
-		IFS=""
-
 		# Start the loop
 		echo "Valid expression. Verification in progress..."
 		code=0
@@ -131,7 +127,6 @@ try() {
 verify() {
 
 	# Concatenate all the arguments into a single string
-	IFS=' '
 	exp="$*"
 
 	# Trim the expression
@@ -152,8 +147,9 @@ verify() {
 
 		echo "Valid expression. Verification in progress..."
 		query=$(build_k8s_request "")
-		client_with_options=$(build_k8s_client_with_options)
-		result=$(eval $client_with_options get $resource $query \
+		client_options=$(build_k8s_client_options)
+		cmd=$(trim "$DETIK_CLIENT_NAME get $resource $query $client_options")
+		result=$(eval $cmd \
 			| tail -n +2 \
 			| filter_by_resource_name "$name" \
 			| wc -l \
@@ -165,7 +161,7 @@ verify() {
 		detik_debug "$BATS_TEST_DESCRIPTION"
 		detik_debug ""
 		detik_debug "Client query:"
-		detik_debug "$client_with_options get $resource $query"
+		detik_debug "$cmd"
 		detik_debug ""
 		detik_debug "Result:"
 		detik_debug "$result"
@@ -251,8 +247,9 @@ verify_value() {
 	# 2. Remove the first line (the one that contains the column names)
 	# 3. Filter by resource name
 	query=$(build_k8s_request "$property")
-	client_with_options=$(build_k8s_client_with_options)
-	result=$(eval $client_with_options get $resource $query | tail -n +2 | filter_by_resource_name "$name")
+	client_options=$(build_k8s_client_options)
+	cmd=$(trim "$DETIK_CLIENT_NAME get $resource $query $client_options")
+	result=$(eval $cmd | tail -n +2 | filter_by_resource_name "$name")
 
 	# Debug?
 	detik_debug "-----DETIK:begin-----"
@@ -260,7 +257,7 @@ verify_value() {
 	detik_debug "$BATS_TEST_DESCRIPTION"
 	detik_debug ""
 	detik_debug "Client query:"
-	detik_debug "$client_with_options get $resource $query"
+	detik_debug "$cmd"
 	detik_debug ""
 	detik_debug "Result:"
 	detik_debug "$result"
@@ -272,66 +269,73 @@ verify_value() {
 	detik_debug ""
 
 	# Is the result empty?
-	empty=0
-	if [[ "$result" == "" ]]; then
-		echo "No resource of type '$resource' was found with the name '$name'."
-	fi
-
-	# Verify the result
-	IFS=$'\n'
 	invalid=0
 	valid=0
-	for line in $result; do
+	if [[ "$result" == "" ]] && [[ "$expected_count" != "0" ]]; then
+		echo "No resource of type '$resource' was found with the name '$name'."
 
-		# Keep the second column (property to verify)
-		# This column may contain spaces.
-		value=$(cut -d ' ' -f 2- <<< "$line" | xargs)
-		element=$(cut -d ' ' -f 1 <<< "$line" | xargs)
+	# Otherwise, verify the result
+	else
+		# Read line by line and avoid overriding IFS globally.
+		# Do not use mapfile (mapfile -t resultAsArray <<< "$result")
+		# as it is not available in Bash 3 (used on MacOS)
+		resultAsArray=()
+		while IFS= read -r line; do resultAsArray+=("$line"); done <<< "$result"
 
-		# Compare with an exact value (case insensitive)
-		if [[ "$exp" =~ "more than" ]]; then
-			if [[ "$value" -gt "$expected_value" ]]; then
-				echo "$element matches the regular expression (found $value)."
-				valid=$((valid + 1))
-			else
-				echo "Current value for $element is not more than $expected_value..."
-				invalid=$((invalid + 1))
-			fi
-		elif [[ "$exp" =~ "less than" ]]; then
-			if [[ "$value" -lt "$expected_value" ]]; then
-				echo "$element matches the regular expression (found $value)."
-				valid=$((valid + 1))
-			else
-				echo "Current value for $element is not less than $expected_value..."
-				invalid=$((invalid + 1))
-			fi
-		elif [[ "$verify_strict_equality" == "true" ]]; then
-			value=$(to_lower_case "$value")
-			expected_value=$(to_lower_case "$expected_value")
-			if [[ "$value" != "$expected_value" ]]; then
-				echo "Current value for $element is $value..."
-				invalid=$((invalid + 1))
-			else
-				echo "$element has the right value ($value)."
-				valid=$((valid + 1))
-			fi
-		# Verify a regex (we preserve the case)
-		else
-			# We do not want another syntax for case-insensitivity
-			if [ "$DETIK_REGEX_CASE_INSENSITIVE_PROPERTIES" = "true" ]; then
+		# Now, deal with every line
+		for line in "${resultAsArray[@]}"; do
+			echo "$line" >> /tmp/toto3
+
+			# Keep the second column (property to verify)
+			# This column may contain spaces.
+			value=$(cut -d ' ' -f 2- <<< "$line" | xargs)
+			element=$(cut -d ' ' -f 1 <<< "$line" | xargs)
+
+			# Compare with an exact value (case insensitive)
+			if [[ "$exp" =~ "more than" ]]; then
+				if [[ "$value" -gt "$expected_value" ]]; then
+					echo "$element matches the regular expression (found $value)."
+					valid=$((valid + 1))
+				else
+					echo "Current value for $element is not more than $expected_value..."
+					invalid=$((invalid + 1))
+				fi
+			elif [[ "$exp" =~ "less than" ]]; then
+				if [[ "$value" -lt "$expected_value" ]]; then
+					echo "$element matches the regular expression (found $value)."
+					valid=$((valid + 1))
+				else
+					echo "Current value for $element is not less than $expected_value..."
+					invalid=$((invalid + 1))
+				fi
+			elif [[ "$verify_strict_equality" == "true" ]]; then
 				value=$(to_lower_case "$value")
-			fi
-
-			reg=$(echo "$value" | grep -E -- "$expected_value")
-			if [[ "$?" -ne 0 ]]; then
-				echo "Current value for $element is $value..."
-				invalid=$((invalid + 1))
+				expected_value=$(to_lower_case "$expected_value")
+				if [[ "$value" != "$expected_value" ]]; then
+					echo "Current value for $element is $value..."
+					invalid=$((invalid + 1))
+				else
+					echo "$element has the right value ($value)."
+					valid=$((valid + 1))
+				fi
+			# Verify a regex (we preserve the case)
 			else
-				echo "$element matches the regular expression (found $reg)."
-				valid=$((valid + 1))
+				# We do not want another syntax for case-insensitivity
+				if [ "$DETIK_REGEX_CASE_INSENSITIVE_PROPERTIES" = "true" ]; then
+					value=$(to_lower_case "$value")
+				fi
+
+				reg=$(echo "$value" | grep -E -- "$expected_value")
+				if [[ "$?" -ne 0 ]]; then
+					echo "Current value for $element is $value..."
+					invalid=$((invalid + 1))
+				else
+					echo "$element matches the regular expression (found $reg)."
+					valid=$((valid + 1))
+				fi
 			fi
-		fi
-	done
+		done
+	fi
 
 	# Do we have the right number of elements?
 	if [[ "$expected_count" != "" ]]; then
@@ -374,17 +378,20 @@ build_k8s_request() {
 }
 
 
-# Builds the client command, with the option for the K8s namespace, if any.
+# Builds the client options (e.g. the K8s namespace.
 # @return 0
-build_k8s_client_with_options() {
+build_k8s_client_options() {
 
-	client_with_options="$DETIK_CLIENT_NAME"
+	client_options=""
 	if [[ -n "$DETIK_CLIENT_NAMESPACE" ]]; then
 		# eval does not "like" the '-n' syntax
-		client_with_options="$DETIK_CLIENT_NAME --namespace=$DETIK_CLIENT_NAMESPACE"
+		client_options="--namespace=$DETIK_CLIENT_NAMESPACE"
+	elif [[ "$DETIK_CLIENT_NAMESPACE_ALL" == 'true' ]]; then
+		# eval does not "like" the '-n' syntax
+		client_options="--all-namespaces"
 	fi
 
-	echo "$client_with_options"
+	echo "$client_options"
 }
 
 

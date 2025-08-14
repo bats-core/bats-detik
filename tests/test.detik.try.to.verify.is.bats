@@ -145,7 +145,7 @@ mytest_deployment(){
 }
 
 
-@test "trying to find of a POD with an extended pattern name" {
+@test "trying to find a POD with an extended pattern name" {
   run try "at most 1 times every 5s to get pod named '^nginx-deployment-[a-z0-9]{9,10}-[a-z0-9]{5}\$' and verify that 'status' is 'running'"
 	[ "$status" -eq 0 ]
 	[ ${#lines[@]} -eq 3 ]
@@ -164,7 +164,7 @@ mytest_deployment(){
 }
 
 
-@test "trying to find of a POD with an invalid extended pattern name" {
+@test "trying to find a POD with an invalid extended pattern name" {
 	run try "at most 1 times every 1s to find 2 pods named '^nginx-deployment-[a-z0-9]{9,10}-[a-z0-9]{4}\$' with 'status' being 'running'"
 	[ "$status" -eq 3 ]
 	[ ${#lines[@]} -eq 3 ]
