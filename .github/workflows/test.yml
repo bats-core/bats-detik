@@ -9,11 +9,11 @@ jobs:
     name: Test DETIK
     runs-on: ubuntu-latest
     steps:
-    - name: Install BATS
+    - name: Install Bats
       run: |
-        git clone https://github.com/bats-core/bats-core.git && \
-        cd bats-core && sudo ./install.sh /usr/local && \
-        cd ..
+        git clone --depth 1 https://github.com/bats-core/bats-core.git "$RUNNER_TEMP/bats-core"
+        "$RUNNER_TEMP/bats-core/install.sh" "$HOME/.local"
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
     - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
     - name: Test with bats
       run: bats tests/
